@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Здоровье — Рекомпозиция (план v1.4)</title>
+<style>
+:root{
+  --b1:#4472C4;--b2:#548235;--b3:#BF8F00;--b4:#C55A11;--b5:#7F7F7F;
+  --bg:#F5F6FA;--text:#222;--card:#fff;--muted:#666;--meta:#555;
+  --border:#ddd;--border2:#e2e2e2;--track:#FAFAFC;--tabbg:#fff;--tabborder:#ccc;
+  --accent:#2F5496;--dep:#B34700;--hover:#222;
+  --ok:#2E7D32;--warn:#E65100;--late:#C62828;
+  color-scheme:light;
+}
+[data-theme="dark"]{
+  --b1:#5B8DEF;--b2:#6FA85A;--b3:#D4A72C;--b4:#E07B39;--b5:#9AA0A6;
+  --bg:#15171C;--text:#E8EAED;--card:#1F232B;--muted:#9AA0A6;--meta:#B7BCC4;
+  --border:#3A3F47;--border2:#3A3F47;--track:#262B33;--tabbg:#1F232B;--tabborder:#3A3F47;
+  --accent:#5B8DEF;--dep:#F0A05A;--hover:#fff;
+  --ok:#81C784;--warn:#FFB74D;--late:#EF9A9A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);padding:18px;transition:background .2s,color .2s}
+h1{font-size:21px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.tabs-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:14px}
+.tab{padding:7px 14px;border-radius:6px;background:var(--tabbg);border:1px solid var(--tabborder);cursor:pointer;font:inherit;font-size:13px;user-select:none;color:var(--text);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab .ico,.tab .sho{display:none}
+.tab:focus-visible,.btn-link:focus-visible{outline:3px solid var(--dep);outline-offset:2px}
+[data-theme="dark"] .tab.active{color:#15171C}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--card);border-radius:8px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.card h2{font-size:15px;margin-bottom:10px}
+.card h3{font-size:13.5px;margin:10px 0 6px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
+.kpi .box{background:var(--track);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.kpi .n{font-size:22px;font-weight:700;line-height:1.1}
+.kpi .l{font-size:11.5px;color:var(--muted);margin-top:3px}
+.kpi .s{font-size:11px;margin-top:2px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.taskrow{border:1px solid var(--border2);border-left:4px solid #999;border-radius:6px;padding:8px 10px;margin-bottom:7px;background:var(--card)}
+.taskrow .t{font-size:13px;font-weight:600}
+.taskrow .m{font-size:11.5px;color:var(--meta);margin-top:2px}
+.taskrow.late{border-left-color:var(--late)}
+.taskrow.active{border-left-color:var(--ok)}
+.taskrow.soon{border-left-color:var(--warn)}
+.muted{color:var(--muted);font-size:12px}
+.note{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.4}
+.note ul{margin:5px 0 2px 18px}
+.btn-link{background:var(--tabbg);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--text)}
+.btn-link:hover{border-color:var(--accent);color:var(--accent)}
+.btn-link.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+[data-theme="dark"] .btn-link.primary{color:#15171C}
+.btn-link.danger:hover{border-color:var(--late);color:var(--late)}
+table.who{border-collapse:collapse;width:100%;font-size:13px}
+table.who th,table.who td{border:1px solid var(--border);padding:7px 10px;text-align:left;vertical-align:top}
+table.who th{background:var(--accent);color:#fff}
+[data-theme="dark"] table.who th{color:#15171C}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+input[type=number],input[type=date],input[type=text],select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--tabbg);color:var(--text);max-width:110px}
+input.bad{border-color:var(--late)}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--muted)}
+.frow{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:6px 0}
+.checkline{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;margin-bottom:6px;background:var(--track);font-size:13px;cursor:pointer;user-select:none}
+.checkline input{width:17px;height:17px;accent-color:var(--accent);flex-shrink:0}
+.checkline.done{opacity:.6;text-decoration:line-through}
+.checkline small{color:var(--muted);text-decoration:none}
+details.ex{border:1px solid var(--border2);border-left:4px solid var(--b1);border-radius:6px;margin-bottom:8px;background:var(--card)}
+details.ex summary{padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:8px;align-items:center}
+details.ex summary::-webkit-details-marker{display:none}
+details.ex summary .vol{font-weight:500;color:var(--muted);font-size:12px;white-space:nowrap}
+details.ex .exbody{padding:0 12px 10px;font-size:12.5px;line-height:1.45;color:var(--meta)}
+details.ex .exbody b{color:var(--text)}
+.exbody .sect{display:block;font-weight:600;color:var(--text);margin:8px 0 3px}
+.exbody ul,.exbody ol{margin:2px 0 4px 20px;padding:0}
+.exbody li{margin:3px 0}
+ul.plist{margin:4px 0 4px 20px;padding:0;font-size:12.5px;line-height:1.5;color:var(--meta)}
+ul.plist li{margin:4px 0}
+ul.plist b{color:var(--text)}
+ol.plist{margin:4px 0 4px 20px;padding:0;font-size:12.5px;line-height:1.5;color:var(--meta)}
+ol.plist li{margin:4px 0}
+details.ex.arm{border-left-color:var(--b3)}
+details.ex.rec{border-left-color:var(--b2)}
+.loggrid{display:grid;grid-template-columns:1fr repeat(3,minmax(86px,110px));gap:6px;align-items:center;font-size:12px;margin-top:4px}
+.loggrid input{max-width:none;width:100%;padding:5px 6px}
+.loggrid .exn{font-weight:600;font-size:12.5px}
+.loggrid .prev{grid-column:2/5;font-size:11px;color:var(--muted);margin-top:-3px;margin-bottom:2px}
+.stopcard{border:1px solid var(--late);border-left:5px solid var(--late);border-radius:6px;padding:10px 12px;margin:10px 0;background:var(--card);font-size:12.5px}
+.stopcard b{color:var(--late)}
+.stopcard ul{margin:6px 0 2px 18px}
+svg.chart{width:100%;height:150px;display:block}
+.chartbox{background:var(--track);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px}
+.chartbox .ct{font-size:12px;font-weight:700;margin-bottom:4px}
+.pill{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11.5px;font-weight:600;background:var(--track);border:1px solid var(--border)}
+.pill.ok{color:var(--ok);border-color:var(--ok)}
+.pill.warn{color:var(--warn);border-color:var(--warn)}
+.pill.late{color:var(--late);border-color:var(--late)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:var(--tabbg);color:var(--text);padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer}
+.seg button.on{background:var(--accent);color:#fff}
+[data-theme="dark"] .seg button.on{color:#15171C}
+.histt td{font-size:12px}
+.del{cursor:pointer;color:var(--late);font-weight:700;padding:0 6px}
+.tr-up{color:var(--ok);font-weight:700}
+.tr-dn{color:var(--late);font-weight:700}
+.tr-eq{color:var(--muted);font-weight:700}
+@media (max-width:640px){
+  body{padding:10px 10px calc(76px + env(safe-area-inset-bottom));padding-left:calc(10px + env(safe-area-inset-left));padding-right:calc(10px + env(safe-area-inset-right))}
+  h1{font-size:17px}
+  .sub{font-size:11.5px;margin-bottom:10px}
+  .card{padding:12px 10px;margin-bottom:10px}
+  /* нижний таб-бар в зоне большого пальца, с учётом safe-area */
+  #tabs{position:fixed;left:0;right:0;bottom:0;z-index:50;margin:0;display:flex;flex-wrap:nowrap;gap:2px;background:var(--card);border-top:1px solid var(--border);padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.18)}
+  #tabs .tab{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;border:0;background:none;border-radius:8px;min-height:48px}
+  #tabs .tab .lbl{display:none}
+  #tabs .tab .ico{display:block;font-size:20px;line-height:1}
+  #tabs .tab .sho{display:block;font-size:9.5px;line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+  #tabs .tab.active{background:var(--track)}
+  #tabs .tab.active .sho{color:var(--accent);font-weight:700}
+  [data-theme="dark"] #tabs .tab.active{color:var(--text)}
+  /* поля ввода ≥16px — Safari не зумит при фокусе; тач-таргеты ≥44px */
+  input[type=number],input[type=date],input[type=text],select{font-size:16px;min-height:44px;max-width:none}
+  label.f{flex:1 1 44%}
+  label.f input,label.f select{width:100%}
+  .frow{gap:8px}
+  .btn-link{padding:11px 14px;font-size:14px;min-height:44px}
+  .checkline{padding:11px 12px;min-height:44px}
+  .checkline input{width:21px;height:21px}
+  .seg button{padding:10px 12px;min-height:44px}
+  .kpi{grid-template-columns:repeat(2,1fr);gap:8px}
+  .kpi .n{font-size:19px}
+  .kpi .box{padding:9px 10px}
+  table.who{min-width:520px;font-size:12px}
+  svg.chart{height:125px}
+  /* логгер: название на всю ширину, три подхода в ряд под ним */
+  .loggrid{grid-template-columns:repeat(3,1fr);margin-top:8px}
+  .loggrid .exn{grid-column:1/-1;margin-bottom:-2px}
+  .loggrid .prev{grid-column:1/-1}
+  .loggrid input{min-height:44px;font-size:16px}
+  details.ex summary{padding:12px;min-height:44px}
+  .del{padding:6px 10px;font-size:16px}
+  .toolbar{gap:6px}
+}
+</style>
+</head>
+<body>
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+  <h1>Здоровье — Рекомпозиция</h1>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <button type="button" class="btn-link" id="expBtn">⬇︎ Экспорт</button>
+    <button type="button" class="btn-link" id="impBtn">⬆︎ Импорт</button>
+    <input type="file" id="impFile" accept=".json" style="display:none">
+    <button type="button" class="tab" id="themeBtn" aria-pressed="false">🌙 Тёмная тема</button>
+  </div>
+</div>
+<div class="sub">План v1.4 (02.08.2026) · режим <b id="modeLbl">Р «Рекомпозиция»</b> · цель: талия ↓ + тренд силовых ↑, вес 64–67 · белок 105–130 г/сут · <b>приватность честно:</b> данные лежат в localStorage этого браузера без шифрования и никуда не отправляются (сервера нет); экспорт-JSON содержит личные метрики — храни файл аккуратно (iCloud = облачная копия)</div>
+
+<div class="tabs-row" id="tabs">
+  <button class="tab active" data-p="today"><span class="ico">📅</span><span class="lbl">Сегодня</span><span class="sho">Сегодня</span></button>
+  <button class="tab" data-p="train"><span class="ico">🏋️</span><span class="lbl">Тренировки</span><span class="sho">Трен.</span></button>
+  <button class="tab" data-p="arm"><span class="ico">🖐️</span><span class="lbl">Рука + перерывы</span><span class="sho">Рука</span></button>
+  <button class="tab" data-p="food"><span class="ico">🍳</span><span class="lbl">Питание</span><span class="sho">Еда</span></button>
+  <button class="tab" data-p="metrics"><span class="ico">📈</span><span class="lbl">Метрики</span><span class="sho">Метрики</span></button>
+  <button class="tab" data-p="rules"><span class="ico">📋</span><span class="lbl">Правила</span><span class="sho">Правила</span></button>
+</div>
+
+<!-- ================= СЕГОДНЯ ================= -->
+<div class="panel active" id="p-today">
+  <div class="kpi" id="kpiRow"></div>
+  <div class="cols">
+    <div class="card">
+      <h2>Чек-лист дня <span class="muted" id="todayDate"></span></h2>
+      <div id="mealChecks"></div>
+      <label class="checkline" id="armCheckLine"><input type="checkbox" id="armDone" disabled> Рука: микросессии 4–6×/день <small id="armCnt"></small></label>
+      <div class="frow">
+        <button class="btn-link" id="armPlus">+ микросессия руки</button>
+        <button class="btn-link" id="sweetBtn">🍰 Потратить слот сладкого (<span id="sweetCnt">0</span>/3)</button>
+      </div>
+      <h3>Тренировка</h3>
+      <div class="taskrow" id="nextWorkout"></div>
+      <h3>Быстрый ввод</h3>
+      <div class="frow">
+        <label class="f">Вес утром, кг<input type="number" step="0.1" min="30" max="200" id="qWeight"></label>
+        <label class="f">Шаги вчера<input type="number" step="100" min="0" max="100000" id="qSteps"></label>
+        <label class="f">Сон, ч<input type="number" step="0.5" min="0" max="24" id="qSleep"></label>
+        <label class="f">Рука (0/1/2)<select id="qArm"><option value="">—</option><option value="0">0 чисто</option><option value="1">1 тянет</option><option value="2">2 покалывание</option></select></label>
+        <button class="btn-link primary" id="qSave">Сохранить</button>
+      </div>
+      <div class="note">«Шаги вчера» сохраняются под вчерашней датой. Рука «2» = покалывание/онемение в мизинце или безымянном; три календарных дня подряд «2» → стоп нагрузкам на левую + связь с врачом.</div>
+    </div>
+    <div class="card">
+      <h2>Целевая сетка дня (работа с 12:00)</h2>
+      <table class="who"><tbody id="dayGrid"></tbody></table>
+      <div class="note"><b>Сон: факт был 3:00/11:00 → цель 2:00/10:00.</b>
+        <ul>
+          <li>Ступени: подъём 10:30 (нед. 1) → 10:00 (нед. 2) — плато.</li>
+          <li>Будильник → ноги на пол сразу; телефон заряжается вне кровати.</li>
+          <li>10 мин дневного света + завтрак в первые полчаса.</li>
+          <li>Кофе до ~17:00, чай до ~19:00, дальше травяной.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="alertsCard"><h2>Триггеры</h2><div id="alerts"></div></div>
+</div>
+
+<!-- ================= ТРЕНИРОВКИ ================= -->
+<div class="panel" id="p-train">
+  <div class="toolbar">
+    <span class="muted">Инвентарь:</span>
+    <span class="seg" id="locSeg">
+      <button data-loc="home" class="on">Дом (Тюмень)</button>
+      <button data-loc="bands">Резинки (Ереван/дорога)</button>
+    </span>
+    <span class="muted">Чередующийся сплит A/B · 3×/нед, промежуток ≥1 день · слот ~21:00 · «2 будних вечера + 1 выходной»</span>
+  </div>
+  <div class="card">
+    <h2>Разминка (каждый раз, 5–7 мин)</h2>
+    <ol class="plist">
+      <li>Дорожка: быстрая ходьба в наклон 4–5 мин (без дорожки: марш на месте 3 мин + лестница).</li>
+      <li>Суставная разминка, по 8–10 медленных вращений: шея (полукруги) → плечи назад → локти (левый мягко) → таз → колени → голеностопы.</li>
+      <li>Chin tuck ×5.</li>
+      <li>Первый подход первого упражнения — с половинным весом.</li>
+    </ol>
+    <div class="note"><b>Частота честно:</b> при сплите A/B каждая группа получает в среднем ~1,5 нагрузки в неделю (ориентир ACSM — ≥2×/нед). <b>Опция «кросс-сет» со 2–3-й недели закрывает разрыв:</b> в конце дня A — 1 подход отжиманий; в конце дня B — 1 подход приседаний без веса. +2–3 минуты.</div>
+  </div>
+  <div class="cols">
+    <div class="card">
+      <h2>День A — низ и тяговые <button class="btn-link" style="float:right" data-log="A">Записать тренировку A</button></h2>
+      <div id="exListA"></div>
+      <div class="note">Кросс-сет (опция): + 1×8–12 отжиманий в конце (техника — в дне B).</div>
+    </div>
+    <div class="card">
+      <h2>День B — верх-жимы и кор <button class="btn-link" style="float:right" data-log="B">Записать тренировку B</button></h2>
+      <div id="exListB"></div>
+      <div class="note">Кросс-сет (опция): + 1×10–15 приседаний без веса в конце (техника — в дне A).</div>
+    </div>
+  </div>
+  <div class="card" id="logCard" style="display:none">
+    <h2 id="logTitle">Запись тренировки</h2>
+    <div class="muted" style="margin-bottom:6px">Формат подхода: <b>вес×повторы</b> (например 12×10) или просто повторы (для упражнений без веса). Серым — прошлый результат этого упражнения: цель — побить на 1 повтор или +1–2 кг. Зачёт тренировки: минимум 2 упражнения по 1 подходу.</div>
+    <div id="logGrid"></div>
+    <div class="frow">
+      <label class="f">Дата<input type="date" id="logDate"></label>
+      <button class="btn-link primary" id="logSave">Сохранить</button>
+      <button class="btn-link" id="logCancel">Отмена</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Тренд top-подходов <span class="muted">(текущий инвентарь: <span id="trendLoc"></span>; шкалы гантелей и резинок раздельны)</span></h2>
+    <div class="tscroll"><table class="who histt"><thead><tr><th>Упражнение</th><th>Предыдущий top</th><th>Последний top</th><th>Тренд</th></tr></thead><tbody id="trendBody"></tbody></table></div>
+    <div class="note">Top-подход = лучший вес (при равном весе — повторы). Baseline недели 1 — первая строка дневника; цель §8 плана — устойчивый тренд вверх при чистой технике, не абстрактный множитель.</div>
+  </div>
+  <div class="card">
+    <h2>Кардио — две разные цели</h2>
+    <ul class="plist">
+      <li><b>Норма ~150–300 мин/нед умеренной интенсивности</b> — закрывается только быстрой ходьбой/дорожкой (темп «говорю фразами, петь не могу»): 2–3×/нед по 20–25 мин — наклон 5–8% или интервалы 1 быстро/2 спокойно ×7.</li>
+      <li><b>Шаги 8–10K/день — отдельная поведенческая цель (NEAT):</b> фоновая трата, помощь талии; в норму активности сами по себе не засчитываются.</li>
+      <li>Колено: длинный монотонный бег — нет.</li>
+    </ul>
+    <div class="frow"><button class="btn-link" id="cardioBtn">✓ Кардио сегодня сделано</button><span class="muted" id="cardioWk"></span></div>
+  </div>
+  <div class="card">
+    <h2>Дорожный минимум (командировка/переезд, до 2 недель)</h2>
+    <ol class="plist">
+      <li>Приседания без веса 3×12.</li>
+      <li>Отжимания (от пола или стола) 3×8–12.</li>
+      <li>Ягодичный мостик 3×12.</li>
+      <li>Планка 3×20–40 сек.</li>
+      <li>+ шаги по городу ≥8K.</li>
+    </ol>
+    <ul class="plist">
+      <li>Всего 10–15 мин; рука-протокол как обычно (мячик и лента в ручной клади).</li>
+      <li>Это «не ноль». Правило «не два нуля»: два нулевых дня подряд запрещены.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>История тренировок</h2>
+    <div class="tscroll"><table class="who histt"><thead><tr><th>Дата</th><th>День</th><th>Итог (упражнение: подходы)</th><th></th></tr></thead><tbody id="histBody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ================= РУКА ================= -->
+<div class="panel" id="p-arm">
+  <div class="card">
+    <h2>Слой 0 — лечебный комплекс левой руки</h2>
+    <ul class="plist" style="margin-bottom:8px">
+      <li>Диагнозы: невропатия локтевого нерва (кубитальный канал) + латеральный эпикондилит; лечение консервативное.</li>
+      <li>Ядро от врача (27.06.2026): растяжка Р7, ротация Р8, полотенце Р9, ночной ортез; остальное — консервативный протокол по его рекомендациям.</li>
+      <li>Повторный визит — середина осени: показать весь комплекс + силовую программу целиком.</li>
+      <li><b>Безболевость ≠ выздоровление: комплекс и ортез действуют, пока врач не отменил.</b></li>
+      <li>Частота: 4–6 коротких сессий в день по 5–10 мин — встраиваются в перерывы.</li>
+      <li>Движения только медленные и плавные; локоть сильно не сгибать (макс ~90–100°).</li>
+      <li>Цель этапа — подвижность и предотвращение атрофии, не сила.</li>
+    </ul>
+    <div id="armExList"></div>
+    <div class="stopcard"><b>СТОП-СИГНАЛЫ:</b>
+      <ul>
+        <li>Покалывание/онемение в мизинце и безымянном пальце — <b>немедленный стоп</b> (это нерв).</li>
+        <li>Резкая боль в локте — стоп.</li>
+        <li>Тянущее ощущение в предплечье — норма.</li>
+        <li>Висы на турнике/стенке — запрещены.</li>
+        <li>FlexBar 15+ lbs — запрещён (жёлтый 10 lbs — только если врач явно разрешит).</li>
+        <li>Торсионная палка: только если мягкая (уровень полотенца) — мягко, без Tyler Twist; жёсткая → отложить до визита, работать полотенцем.</li>
+        <li>Статус «2» три календарных дня подряд → пауза нагрузок на левую + связь с врачом, не ждать осени.</li>
+      </ul>
+    </div>
+    <div class="note"><b>Эргономика дня:</b>
+      <ul>
+        <li>Не опираться внутренней стороной локтя о стол/подлокотник.</li>
+        <li>Телефон у уха подолгу не держать — наушники.</li>
+        <li>Локоть при работе мышкой — открытый угол.</li>
+        <li>Ночью ортез (Reh4Mat OKG-04 или аналог) = часть ритуала отбоя.</li>
+        <li>Снаряды: ортез, мягкий мячик, терапластилин, полотенце — больше ничего не нужно.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Перерывы рабочего дня (6–10 ч за экраном; триггер — тап Apple Watch)</h2>
+    <div class="tscroll"><table class="who">
+      <thead><tr><th>Ритм</th><th>Что делать</th></tr></thead>
+      <tbody>
+        <tr><td><b>Каждые 20 мин</b> (20 сек)</td><td>Правило 20-20-20: взгляд в окно вдаль на 20 сек. Вставать не нужно.</td></tr>
+        <tr><td><b>Каждый час</b> (1–2 мин)</td><td>Встать и пройтись · chin tuck ×10 по 3 сек (подбородок строго назад, затылок вверх) · плечи назад ×5–7 · встряхнуть кисти 20 сек · при напряжении руки — нейроглайд Р6 ×1.</td></tr>
+        <tr><td><b>Каждые 2–3 ч</b> (5 мин)</td><td>Наклоны шеи вбок по 30 сек · растяжка сгибателей предплечья (ладонь вверх, пальцы на себя-вниз) 30 сек · разгибателей (ладонь вниз, пальцы на себя) 30 сек — левой особенно · самомассаж трапеций 1–2 мин · нейроглайд ×10 · <b>прогулка на улицу + проветрить комнату</b> · грудное разгибание 30 сек.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><b>Раскладка микросессий руки по перерывам:</b>
+      <ul>
+        <li>Час 1 — Р1–Р3</li>
+        <li>Час 2 — Р7</li>
+        <li>Большой перерыв — Р6 + растяжки</li>
+        <li>Вечер — Р4/Р5 + Р8 (1×/день)</li>
+      </ul>
+      <b>Стоп-сигналы за работой (прерваться немедленно):</b>
+      <ul>
+        <li>Усиление онемения/покалывания в мизинце и безымянном.</li>
+        <li>Боль, отдающая вниз по руке.</li>
+        <li>Слабость при захвате мыши или кружки.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ПИТАНИЕ ================= -->
+<div class="panel" id="p-food">
+  <div class="card">
+    <h2>Конструктор дня — схема «3 + 1(+1)» · белок 105–130 г (1,6–2,0 г/кг)</h2>
+    <div class="tscroll"><table class="who">
+      <thead><tr><th>Время</th><th>Приём</th><th>Что</th><th>Белок</th></tr></thead>
+      <tbody>
+        <tr><td>~10:15</td><td><b>Завтрак</b></td><td>З1–З3 ниже</td><td>30–35 г</td></tr>
+        <tr><td>~15:00–16:00</td><td><b>Обед</b></td><td>Вторая порция вчерашнего ужина или сборка</td><td>30–35 г</td></tr>
+        <tr><td>~18:30</td><td><b>Перекус №1</b></td><td>Белковый (таблица ниже)</td><td>15–20 г</td></tr>
+        <tr><td>~22:00</td><td><b>Ужин</b></td><td>У1–У8 (готовим 2+ порции → обед завтра)</td><td>30–40 г</td></tr>
+        <tr><td>~23:30–0:30</td><td><b>Перекус №2 — опционально</b></td><td>По голоду: творог/йогурт</td><td>+15–25 г</td></tr>
+        <tr><td colspan="3"><b>База (без перекуса №2)</b></td><td><b>~105–130 г ✓</b></td></tr>
+        <tr><td colspan="3" class="muted">С перекусом №2 — допустимый верх, не цель</td><td class="muted">до ~140–150 г</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><b>Правила конструктора:</b>
+      <ul>
+        <li>Тарелка = ½ овощи + ¼ белок + ¼ гарнир + ложка масла.</li>
+        <li>Первый приём — в течение часа после подъёма; последний — за ~1,5 ч до отбоя.</li>
+        <li>Пропущенный приём не компенсируется удвоением следующего.</li>
+        <li>Жидкие калории — нет (кефир/йогурт можно; молоко — в кашу/кофе).</li>
+        <li>Выше ~145 г белка (2,2 г/кг) пользы нет — это не цель.</li>
+        <li>Дейт-ужин — не срыв: назавтра обычный режим.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="cols">
+    <div class="card"><h2>Завтраки (≤10 мин)</h2><div id="recB"></div></div>
+    <div class="card"><h2>Обеды</h2><div id="recL"></div>
+      <div class="note">По умолчанию: <b>обед = вторая порция вчерашнего ужина</b> (контейнер с вечера; в холодильник в течение 2 ч, съесть за 3 дня). Обед — 15 минут без рабочих задач.</div>
+    </div>
+  </div>
+  <div class="card"><h2>Ужины (на 2 порции; У4 и У8 — batch на 3–4 порции)</h2><div id="recD"></div>
+    <div class="note"><b>Гигиена (обязательно):</b>
+      <ul>
+        <li>После сырой курицы/индейки/рыбы — доску, нож и руки горячей водой с мылом.</li>
+        <li>Сырое и готовое не пересекаются.</li>
+        <li>Птицу перед готовкой не мыть: безопасность даёт температура, брызги разносят бактерии.</li>
+        <li>Остатки — в холодильник в течение 2 ч, съесть за 3 дня (batch — можно заморозить порциями), разогревать до горячего пара.</li>
+        <li>Блюда с сырыми/недоготовленными яйцами — только пастеризованные яйца (FDA).</li>
+        <li>Гостям — только безопасные температуры (лосось 60–63°C, желток плотный).</li>
+      </ul>
+    </div>
+  </div>
+  <div class="cols">
+    <div class="card">
+      <h2>Перекусы (белковые)</h2>
+      <div class="tscroll"><table class="who">
+        <thead><tr><th>Вариант</th><th>Белок</th></tr></thead>
+        <tbody>
+          <tr><td>Творог 5–9%, 100–150 г (база перекуса №2 — казеин на ночь)</td><td>17–26 г</td></tr>
+          <tr><td>Греческий йогурт 150–200 г (+ягоды = почти десерт)</td><td>14–18 г</td></tr>
+          <tr><td>2–3 варёных яйца (партия в холодильнике на 3 дня)</td><td>13–20 г</td></tr>
+          <tr><td>Кефир/тан 300 мл</td><td>~9 г</td></tr>
+          <tr><td>Сыр 40–50 г + фрукт</td><td>10–13 г</td></tr>
+          <tr><td>Горсть орехов 30 г (добавка, не замена; не из пакета)</td><td>~6 г</td></tr>
+          <tr><td>Тунец в с/с 120–150 г слитого + хлебец («аварийный якорь»; light/skipjack)</td><td>~30 г</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h2>Протокол сладкого — 3 слота/нед</h2>
+      <ul class="plist">
+        <li><b>Удовольствие</b> (запланировал, за столом, смакуя) — можно; <b>анестезия</b> (импульсом, за экраном, из пачки) — нет.</li>
+        <li><b>Слот</b> = 1 порция ~150–250 ккал: аффогато · ягоды с маскарпоне · творог+мёд+ягоды · горький шоколад 3–4 дольки · шарик-два мороженого · пирожное / кусок торта / пахлавы.</li>
+        <li>Из пачки — слабый слот: порцию на тарелку, пачку убрать до того, как сел.</li>
+        <li><b>Правила слота:</b> после приёма с белком · за столом, без рабочего экрана · запас дома не держим.</li>
+        <li><b>Импульс «хочу сейчас»:</b> 15 мин ходьбы → всё ещё хочешь → трать слот без вины. Кончились → фрукт, чай, творог с ложкой мёда.</li>
+        <li><b>Вне бюджета:</b> дейт-десерты и события. <b>Никогда:</b> сладкие напитки, сироп в кофе.</li>
+        <li>Сырники без сахара в тесте, с ягодами = завтрак, не слот.</li>
+      </ul>
+      <div class="frow"><button class="btn-link" id="sweetBtn2">🍰 Потратить слот (<span id="sweetCnt2">0</span>/3 на этой неделе)</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Корзина недели (Тюмень) <button class="btn-link" style="float:right" id="shopReset">Сбросить отметки</button></h2>
+    <div class="cols" id="shopList"></div>
+    <div class="note">Не покупаем впрок: десерты, маскарпоне и дейт-позиции (только под событие), сладкие напитки (никогда). Ереван: форель (PBO) вместо лосося, рынок, «хлеб к одному приёму». Лимассол: мезе — событие; греческий йогурт — белковый чемпион.</div>
+  </div>
+  <div class="card">
+    <h2>Напитки</h2>
+    <ul class="plist">
+      <li><b>Вода</b> — основной напиток дня, всегда на столе.</li>
+      <li><b>Кофе</b> — до ~17:00 (за 9–10 ч до отбоя 2:00); молоко можно, сироп — никогда.</li>
+      <li><b>Чай чёрный/зелёный</b> без сахара — свободно до ~19:00, не обжигающим; «к чаю» — по слотам, сам чай свободен.</li>
+      <li><b>Вечером</b> — травяной, каркаде, ройбуш.</li>
+      <li><b>Кефир/йогурт</b> — белковый перекус, можно вечером.</li>
+      <li><b>Сладкие газировки, соки, энергетики</b> — нет.</li>
+      <li><b>Алкоголь:</b> ≤2 порций за раз, ≤2 раз в неделю, никогда в одиночку и никогда как снотворное.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ================= МЕТРИКИ ================= -->
+<div class="panel" id="p-metrics">
+  <div class="card">
+    <h2>Ввод замеров</h2>
+    <div class="frow">
+      <label class="f">Дата<input type="date" id="mDate"></label>
+      <label class="f">Вес, кг<input type="number" step="0.1" min="30" max="200" id="mWeight"></label>
+      <label class="f">Талия, см<input type="number" step="0.5" min="40" max="200" id="mWaist"></label>
+      <label class="f">Сон, ч<input type="number" step="0.5" min="0" max="24" id="mSleep"></label>
+      <label class="f">Шаги<input type="number" step="100" min="0" max="100000" id="mSteps"></label>
+      <button class="btn-link primary" id="mSave">Сохранить</button>
+    </div>
+    <div class="note"><b>Протокол талии:</b> утром натощак, без одежды, лента на уровне пупка, горизонтально, после обычного выдоха, не втягивать; замер 1×/нед в фиксированный день (лучше понедельник). <b>Протокол веса:</b> утром после туалета до еды, одни весы; смотрим только недельное среднее — дневные скачки ±1 кг это вода. Диапазоны ввода: вес 30–200 кг, талия 40–200 см, сон 0–24 ч, шаги 0–100 000; дата не из будущего.</div>
+  </div>
+  <div class="cols">
+    <div class="chartbox"><div class="ct">Вес — недельные средние, кг (коридор 64–67)</div><svg class="chart" id="chWeight"></svg></div>
+    <div class="chartbox"><div class="ct">Талия — недельные точки, см (цель ≤84 к 01.12)</div><svg class="chart" id="chWaist"></svg></div>
+  </div>
+  <div class="card">
+    <h2>Панель понедельника <span class="muted">(сводка текущей недели vs прошлой)</span></h2>
+    <div class="tscroll"><table class="who"><thead><tr><th>Метрика</th><th>Эта неделя</th><th>Прошлая</th></tr></thead><tbody id="mondayBody"></tbody></table></div>
+    <div class="note">Фото 1×/мес — тот же свет и ракурс (дашборд фото не хранит). Первое видимое изменение в зеркале — недели 6–8.</div>
+  </div>
+  <div class="card">
+    <h2>Развилка режима (state gate недели 1)</h2>
+    <div class="frow">
+      <label class="f">Контрольный утренний замер талии, см<input type="number" step="0.5" min="40" max="200" id="gateWaist"></label>
+      <button class="btn-link primary" id="gateBtn">Определить режим</button>
+      <span class="pill" id="gateRes"></span>
+    </div>
+    <div class="note">≥85 → Р «чистый рекомп» (вес 64–67, KPI талия ↓ + тренд силовых ↑) · 81–84 → Р с лёгким уклоном в набор · ≤80 → отбой: режим Н «Набор» из архива v1.1.</div>
+  </div>
+  <div class="card">
+    <h2>История замеров</h2>
+    <div class="tscroll"><table class="who histt"><thead><tr><th>Дата</th><th>Вес</th><th>Талия</th><th>Сон</th><th>Шаги</th><th>Рука</th><th></th></tr></thead><tbody id="mHist"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ================= ПРАВИЛА ================= -->
+<div class="panel" id="p-rules">
+  <div class="cols">
+    <div class="card">
+      <h2>Архитектура и иерархия</h2>
+      <ul class="plist">
+        <li>Слои: 0 — лечение руки · 1 — сон 7–9 ч · 2 — сила 3×/нед (сплит A/B) · 3 — кардио умеренной интенсивности + шаги (NEAT) · 4 — питание.</li>
+        <li><b>Иерархия при нехватке времени:</b> рука и сон не режутся никогда → силовые → кардио. Питание вне конкуренции.</li>
+        <li><b>Минимальная неделя</b> (клапан пиков — PTE, переезд, аврал): 2 силовые по 20–30 мин + шаги ≥7K + рука-протокол. ≈1 ч. Питание в полном объёме.</li>
+        <li><b>Не два нуля:</b> один нулевой день — норм; два подряд — запрещено (на второй — дорожный минимум).</li>
+        <li><b>Стресс-протокол:</b> плохие новости → 15 мин быстрой ходьбы, потом решения. Тренировка в стрессовый день сокращается до 20 мин, не отменяется.</li>
+        <li><b>Болезнь:</b> «ниже шеи» — силовые стоп; «выше шеи» — ходьба по самочувствию. Возврат: 2 лёгкие тренировки (50%).</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Триггерные правила</h2>
+      <ul class="plist">
+        <li>Талия не снижается 4 последовательные недельные точки (вес в коридоре) → по одному рычагу: слоты 3→2 → гарнир −¼ → шаги к 10K.</li>
+        <li>Сладкое вне слотов ≥2 раз/нед → стресс-сигнал: сон + ходьба; вторая неделя → слоты временно 2.</li>
+        <li>Вес &lt;64 → есть больше (вернуть перекус №2).</li>
+        <li>Вес &gt;67 при стоящей талии → убрать последнюю добавку.</li>
+        <li>Талия падает, но тренд силовых тоже падает → +белок/гарнир, силовые в приоритет.</li>
+        <li>2 плановые силовые подряд пропущены (≥6 дней без тренировки) → следующая неделя минимальная, не «догонять».</li>
+        <li>Рука «2» три календарных дня подряд → стоп + врач.</li>
+        <li>Колено болит 3+ дня → убрать наклон/глубину; не проходит неделю → врач.</li>
+        <li>3 минимальные недели подряд без причины → дрейф: ревизия расписания. Ослабление — только явным решением.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Чего НЕ делаем</h2>
+      <ul class="plist">
+        <li>Добавки/лекарства сами себе — нет (протеин — опциональная еда после месяца на продуктах).</li>
+        <li>Руку «через боль» и «а вдруг можно повисеть» — нет.</li>
+        <li>Длинный бег — нет (колено).</li>
+        <li>Жёсткий дефицит / «сушка» — нет.</li>
+        <li>Классический масс-набор — нет (сначала талия ≤84).</li>
+        <li>Кето, голодание, спецпротоколы — нет.</li>
+        <li>Краш-решения перед свиданиями — нет.</li>
+        <li>Абонементы в первый месяц новой страны — нет (2 недели наблюдения).</li>
+        <li>Ракетки/скалолазание/борьба — до зелёного света врача.</li>
+        <li>Гостям гастрономические температуры и жидкий желток — нет: безопасная шкала.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Осень (Тюмень) — медблок</h2>
+      <ul class="plist">
+        <li><b>Визит по руке (середина осени)</b> — вопросы врачу:
+          <ol><li>Показать силовую программу целиком (отжимания, жимы, тяги) — одобрить/поправить; прогрессия на левую?</li><li>Ортез дальше?</li><li>Висы — когда?</li><li>Плавание (Лимассол-2027)?</li><li>Падел/теннис?</li><li>Письменный план на 6–12 мес транзита.</li><li>Тейпинг / контрфорс-браслет под силовые — есть ли смысл? (сами не назначаем)</li><li>Торсионная палка — можно ли ей заменить полотенце, сопротивление/протокол?</li></ol>
+          → по итогам патч плана v1.5.</li>
+        <li>Терапевт + кровь: ОАК, липиды, <b>глюкоза/HbA1c (целевой вопрос при талии/рост ≈0,5)</b>, ферритин, витамин D, ТТГ, печень/почки. Результаты — в один PDF.</li>
+        <li>Колено: уточнить статус/диагноз + вопрос про поддержку под нагрузку (наколенник/тейп — сами не назначаем).</li>
+        <li>Стоматология: санация + гигиена (в Тюмени, до отъезда).</li>
+        <li>Окулист: зрение + запасные очки/линзы в транзит.</li>
+        <li>Прививки — спросить терапевта.</li>
+        <li>Аптечка: базовый набор + список МНН на латинице.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Фазы</h2>
+      <ul class="plist">
+        <li><b>Тюмень (сейчас–ноябрь):</b> дом укомплектован; привычка 3×/нед; медблок до отъезда.</li>
+        <li><b>Алматы (октябрь, 4–5 дней):</b> PTE важнее — дорожный минимум.</li>
+        <li><b>Ереван (с ~1 декабря):</b> режим «Резинки» + новый baseline; рельеф города = кардио; зал — если ≤15 мин пешком; весы купить.</li>
+        <li><b>Лимассол (2027):</b> месяцы 1–7 — стабильный минимум, ничего нового; зал после первой зарплаты; море по самочувствию руки; жара — прохладные часы; SPF ежедневно.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Внешность сверх зала</h2>
+      <ul class="plist">
+        <li><b>Планка к 01.12:</b> талия 88→84–85 при 65–67 кг; устойчивый тренд силовых вверх от baseline недели 1 (дневник, не абстрактный множитель); плечи/спина шире, осанка, энергия.</li>
+        <li>«Жилистый» = мышцы ↑ + талия ↓; кубики в цели не входят.</li>
+        <li>Осанка «убирает» 2–3 см живота визуально.</li>
+        <li>Зубы — закрыть в Тюмени.</li>
+        <li>Кожа: умывание + увлажнение + SPF ежедневно с Кипра.</li>
+        <li>Стрижка каждые 3–5 нед.</li>
+        <li>Одежда по фактическому размеру к Еревану.</li>
+        <li>Групповая активность 1×/нед по желанию (хайк/плавание/волейбол — по руке).</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note">Источник: health_plan_v1_4.md (02.08.2026). После осеннего визита по руке — обновить план (v1.5) и дашборд. Хранение: localStorage без шифрования, сервера нет; экспорт-файл содержит личные метрики; в публичные репозитории данные не попадают.</div>
+</div>
+
+<script>
+'use strict';
+/* ================= данные плана ================= */
+const EX = {
+ A: [
+  {n:'Приседания', vol:'3×10–12', home:'С гантелями (или «гоблет» — одна у груди: левой руке легче).', bands:'С рюкзаком или стоя на петле, петля на плечах. 3×12–15.',
+   t:'<span class="sect">Целевые мышцы</span>Квадрицепс, ягодицы, кор.<span class="sect">Техника</span><ol><li>Стопы на ширине плеч, носки чуть развёрнуты; снаряд в руках вдоль тела или у груди.</li><li>На вдохе таз назад и вниз, как садишься на стул; спина прямая, взгляд вперёд.</li><li>Колени идут за носками и не сводятся внутрь.</li><li>Глубина — до комфорта колена, не через боль.</li><li>На выдохе встать, толкаясь всей стопой.</li></ol><span class="sect">Ошибки</span><ul><li>Отрыв пяток (подложи блины/книгу).</li><li>Круглая поясница.</li><li>Колени внутрь.</li></ul>'},
+  {n:'Румынская тяга', vol:'3×10', home:'С гантелями.', bands:'Стоя на резинке, ручки в руках — натяжение растёт к верхней точке, хвату легко.',
+   t:'<span class="sect">Целевые мышцы</span>Задняя поверхность бедра, ягодицы.<span class="sect">Техника</span><ol><li>Стоя, снаряд перед бёдрами; колени чуть согнуты, угол дальше не меняется.</li><li>Таз назад, корпус вперёд с прямой спиной.</li><li>Снаряд скользит вдоль ног до середины голени — чувствуешь натяжение сзади бедра.</li><li>Вверх — движением таза вперёд, не рывком спины.</li></ol><span class="sect">Ошибки</span><ul><li>Круглая спина.</li><li>Приседание вместо наклона.</li><li>Снаряд далеко от ног.</li></ul><span class="sect">Рука</span><ul><li>Хват устал раньше бёдер → вес ниже.</li><li>Лямки не используем — работаем в пределах слабого звена.</li></ul>'},
+  {n:'Тяга к поясу', vol:'3×10–12', home:'Гантели в наклоне 45°.', bands:'Сидя на полу, резинка за стопы, тяга ручек к поясу.',
+   t:'<span class="sect">Целевые мышцы</span>Широчайшие, середина спины — V-силуэт сзади.<span class="sect">Техника</span><ol><li>Наклон корпуса ~45°, спина прямая, колени подсогнуты, снаряд под плечами.</li><li>На выдохе тянуть к поясу (не к груди), локти вдоль тела.</li><li>В верхней точке свести лопатки.</li><li>На вдохе медленно опустить.</li></ol><span class="sect">Ошибки</span><ul><li>Рывок корпусом.</li><li>Тяга к груди с разведёнными локтями.</li><li>Круглая спина.</li></ul><span class="sect">Рука</span><ul><li>Хват нейтральный, сжатие минимально достаточное.</li><li>Вариант: тяга одной правой, левое ПРЕДПЛЕЧЬЕ (не кисть) на опоре; левой — отдельно, с меньшим весом.</li></ul>'},
+  {n:'Подъём ног', vol:'3×10', home:'На стенке в упоре на ПРЕДПЛЕЧЬЯ (не вис!).', bands:'Лёжа: прямые ноги до 90°, медленно вниз не касаясь пола. 3×12–15.',
+   t:'<span class="sect">Целевые мышцы</span>Пресс (нижний сегмент), сгибатели бедра.<span class="sect">Техника</span><ol><li>Упор на предплечья, спина прижата к спинке.</li><li>На выдохе поднять колени к груди (сложнее — прямые ноги до горизонтали).</li><li>Без раскачки; на вдохе медленно опустить.</li><li>Поясницу не прогибать, дыхание не задерживать.</li></ol><span class="sect">Запрет</span><ul><li>Вис на руках — тракция локтевого нерва.</li></ul>'},
+  {n:'Планка', vol:'3×20–40 сек', home:'На предплечьях.', bands:'Без изменений.',
+   t:'<span class="sect">Техника</span><ol><li>Локти под плечами, тело — прямая линия от макушки до пяток.</li><li>Живот подтянут, ягодицы в тонусе, взгляд в пол.</li><li>Дыхание ровное; время растёт от 20 к 40+ сек.</li><li>3×45 сек легко → поочерёдный отрыв ноги на 2 сек.</li></ol><span class="sect">Ошибки</span><ul><li>Провисший таз.</li><li>Задранный таз.</li></ul><span class="sect">Рука</span><ul><li>Ноет левая → сместить опору правее, планка на прямых руках или боковая на правой.</li></ul>'}
+ ],
+ B: [
+  {n:'Отжимания', vol:'3×8–12', home:'Старт — от перекладины стенки; от пола — при нуле реакций локтя.', bands:'Без изменений (сложнее — петля на спине).',
+   t:'<span class="sect">Целевые мышцы</span>Грудь, трицепс, передняя дельта, кор.<span class="sect">Старт — наклонные от перекладины стенки (первые 2 недели)</span><ol><li>Лицом к стенке, обхват перекладины на уровне груди, руки чуть шире плеч; <b>хват сверху — ладони вниз («от себя»)</b>, большой палец замком; обратный хват «к себе» не используем (супинация под нагрузкой + острое сгибание локтя).</li><li>Ноги назад — тело в прямую линию под наклоном.</li><li>Согнуть локти ~45° к корпусу, грудью к перекладине; на выдохе выжаться.</li><li>Ниже перекладина = тяжелее; прогрессия: высокая → ниже → от пола.</li><li>Бонус: обхват перекладины = нейтральное запястье — самый дружелюбный локтю вариант.</li></ol><span class="sect">От пола</span><ol><li>Упор лёжа: ладони чуть шире плеч, пальцы вперёд, тело — планка.</li><li>На вдохе грудью к полу, локти ~45° к корпусу.</li><li>На выдохе выжаться; таз не провисает.</li></ol><span class="sect">Рука</span><ul><li>Запястья прямые.</li><li>Неприятно левому запястью → на кулаках или на гантелях.</li><li>Отжимания от пола врачом не обсуждались — вопрос №1 осеннего визита; при любой реакции локтя — версия от перекладины/стола.</li></ul>'},
+  {n:'Жим вверх', vol:'3×10', home:'Гантели сидя/стоя.', bands:'Стоя на резинке, жим ручек от плеч вверх.',
+   t:'<span class="sect">Целевые мышцы</span>Плечи, трицепс.<span class="sect">Техника</span><ol><li>Снаряд у плеч; нейтральный хват комфортнее локтю; локти под снарядом.</li><li>На выдохе выжать вверх до почти прямых рук — локти не «в замок».</li><li>На вдохе медленно к плечам.</li><li>Кор подтянут, поясницу не прогибать (сидя — спина с опорой).</li></ol><span class="sect">Рука</span><ul><li>Вес — который левая контролирует идеально.</li><li>Прогрессия левой — последней и медленнее всех.</li></ul>'},
+  {n:'Разведения в стороны', vol:'3×12', home:'Гантели.', bands:'Стоя на резинке (одной ногой — легче).',
+   t:'<span class="sect">Целевые мышцы</span>Средняя дельта — ширина плеч, главная мышца «жилистого» силуэта.<span class="sect">Техника</span><ol><li>Стоя, снаряд вдоль тела; локти чуть согнуты и зафиксированы.</li><li>На выдохе поднять руки в стороны до горизонтали; мизинец не выше большого пальца.</li><li>Опускание вдвое медленнее подъёма.</li></ol><span class="sect">Ошибки</span><ul><li>Раскачка корпусом.</li><li>Подъём выше плеч.</li></ul><span class="sect">Примечание</span><ul><li>Вес всегда маленький — это нормально, упражнение изолирующее.</li></ul>'},
+  {n:'Колесо / скручивания', vol:'3×8–10 / 3×15', home:'Колесо — ПОСЛЕДНИМ в очереди, с колен. До ввода — скручивания.', bands:'Скручивания.',
+   t:'<span class="sect">Скручивания (базовый вариант)</span><ol><li>Лёжа, стопы на полу, руки крест-накрест на груди.</li><li>На выдохе оторвать лопатки от пола; поясница прижата.</li><li>На вдохе медленно вниз.</li></ol><span class="sect">Колесо (вводится последним из всех упражнений)</span><ol><li>С колен, руки на рукоятках.</li><li>Катить вперёд на комфортную длину, корпус прямой.</li><li>Вернуться силой пресса.</li></ol><span class="sect">Стоп</span><ul><li>Покалывание в мизинце = упражнение снято на сегодня.</li></ul>'},
+  {n:'Ягодичный мостик', vol:'3×12', home:'Сложнее — гантель на таз или одна нога.', bands:'Петля на таз с прижимом руками или одна нога.',
+   t:'<span class="sect">Целевые мышцы</span>Ягодицы, задняя цепь — противовес сидячему дню.<span class="sect">Техника</span><ol><li>Лёжа на спине, стопы на полу у таза на ширине плеч.</li><li>На выдохе поднять таз до прямой линии колени–таз–плечи.</li><li>Сжать ягодицы 1–2 сек в верхней точке.</li><li>На вдохе медленно вниз, не касаясь пола до конца подхода.</li></ol><span class="sect">Ошибки</span><ul><li>Прогиб поясницы — вверху «подкрутить» таз.</li><li>Толчок шеей.</li></ul>'}
+ ]
+};
+const ARMEX = [
+ {n:'Р1. Сгибание-разгибание кисти (ROM)', vol:'10–15 в каждую сторону', t:'<ol><li>Локоть ~90°, предплечье на опоре, ладонь вниз.</li><li>Медленно поднять кисть вверх — лёгкое натяжение внутри предплечья.</li><li>Медленно опустить вниз — натяжение снаружи.</li><li>Плавно, «как будто гладишь».</li></ol>'},
+ {n:'Р2. Супинация-пронация', vol:'10–15 в каждую сторону', t:'<ol><li>Локоть прижат к боку, согнут 90°, рука держит «воображаемый молоток».</li><li>Медленно повернуть ладонь вверх (супинация).</li><li>Медленно повернуть ладонь вниз (пронация).</li><li>Движение только в предплечье, плечо не участвует.</li></ol>'},
+ {n:'Р3. «Веер» пальцами', vol:'10–15', t:'<ol><li>Ладонь расслаблена, смотрит вверх или вбок.</li><li>Медленно максимально развести пальцы в стороны.</li><li>Медленно свести вместе.</li><li>Без сопротивления.</li></ol>'},
+ {n:'Р4. Мягкий мячик', vol:'8–12', t:'<ol><li>Самый мягкий мячик или губка.</li><li>Медленно сжать до лёгкого сопротивления.</li><li>Держать 3–5 сек.</li><li>Медленно разжать.</li></ol><ul><li><b>НЕ выжимать изо всех сил.</b></li></ul>'},
+ {n:'Р5. Терапластилин', vol:'5–10 мин', t:'<ul><li>Разминать, перекатывать, делать «колбаски» и шарики.</li><li>Зажимать между большим и каждым пальцем по очереди.</li><li>Без сильного сопротивления.</li><li>Взаимозаменяем с Р4 в течение дня.</li></ul>'},
+ {n:'Р6. Нейроглайд локтевого нерва', vol:'10 × 5–10 сек', t:'<ol><li>Рука в сторону (поза «стоп»), ладонь вперёд.</li><li>Одновременно: согнуть кисть вниз + наклонить голову в противоположную сторону.</li><li>Вернуться в исходное.</li></ol><ul><li>Натяжение — по внешней стороне предплечья, плечу и шее.</li><li>Лёгкое покалывание в мизинце в момент глайда — допустимо; усиление онемения — стоп.</li></ul>'},
+ {n:'Р7. Растяжка кисти в 4 направлениях', vol:'по 15–30 сек', t:'Рука вытянута вперёд, локоть прямой, только сгибание запястья — ничего не вращать:<ol><li>Ладонь вниз, пальцы к полу — тянуть кисть на себя.</li><li>Ладонь вверх, пальцы к потолку — на себя.</li><li>Вбок, кисть гнётся к большому пальцу.</li><li>Вбок, кисть гнётся к мизинцу.</li></ol><ul><li>Второй рукой мягко подтягивать.</li><li>Ощущение тянущее, без боли.</li></ul>'},
+ {n:'Р8. Ротация с молотком', vol:'10 × 3 подхода, 1×/день', t:'<ol><li>Сидя, предплечье на столе/бедре, локоть ~90°, кисть свисает за край.</li><li>Молоток за конец рукоятки, головка вверх — вертикально.</li><li>Медленно влево до ~90° → вернуть в вертикаль.</li><li>Медленно вправо → вернуть. Это одно повторение.</li></ol><ul><li>Возврат 3–5 сек; старт 0,5–1 кг.</li><li>Акцент — супинация (ладонь раскрывается вверх).</li></ul>'},
+ {n:'Р9. Выжимание полотенца', vol:'мягко, без прогрессии', t:'<ol><li>Полотенце двумя руками, ладони вниз.</li><li>Скручивающее движение в обе стороны.</li></ol><ul><li>Без силы, без прогрессии.</li></ul>'}
+];
+const RECIPES = {
+ B: [
+  {n:'З1. Скрэмбл + творог', vol:'~36 г белка · 10 мин', t:'<span class="sect">Состав</span><ul><li>3 яйца</li><li>15 г сливочного масла</li><li>Соль</li><li>Рядом: творог 100 г, хлеб по желанию</li></ul><span class="sect">Шаги</span><ol><li>Яйца + щепотка соли, взбить вилкой до однородности.</li><li>Масло на сковороду, огонь НИЖЕ среднего.</li><li>Влить яйца, постоянно мешать лопаткой от краёв к центру.</li><li>Снять за момент до готовности — дойдут на тарелке. Всего 2–3 мин.</li></ol><span class="sect">Критично</span><ul><li>Сильный огонь = резиновые яйца.</li></ul>'},
+  {n:'З2. Творожная миска', vol:'~30–34 г · 2 мин', t:'<span class="sect">Состав</span><ul><li>200 г творога 5–9% (или греческий йогурт ~250 г)</li><li>Горсть ягод или ½ банана</li><li>10–15 г орехов</li><li>Щепотка корицы (опционально)</li></ul><span class="sect">Примечание</span><ul><li>Половинная порция = шаблон перекуса №2.</li></ul>'},
+  {n:'З3. Овсянка + белковая пара', vol:'~20–25 г · 7 мин', t:'<span class="sect">Состав</span><ul><li>Овсянка 50–60 г (вода или молоко пополам)</li><li>2 варёных яйца (партия на 3 дня) или творог 100 г</li><li>В кашу: ягоды или ½ банана</li></ul><span class="sect">Примечание</span><ul><li>Самый углеводный завтрак — в дни тренировок.</li></ul>'}
+ ],
+ L: [
+  {n:'Сборка №1 «тунец-миска»', vol:'~30–35 г · 5 мин', t:'<span class="sect">Состав (1 порция)</span><ul><li>Тунец <b>консервированный в собственном соку/воде</b> — 120–150 г после слива (light/skipjack предпочтительнее albacore; если в масле — масло слить и ложку масла ниже не добавлять)</li><li>50–80 г рукколы / ромэна / салатного микса</li><li>½ огурца + 1 помидор</li><li>½ банки фасоли (~120 г промытой) или 150 г вчерашнего гарнира</li><li>1 ст.л. оливкового масла + лимон</li></ul>'},
+  {n:'Сборка №2 «яйца + всё»', vol:'~27 г · 7 мин', t:'<span class="sect">Состав (1 порция)</span><ul><li>3 варёных яйца</li><li>Хлеб</li><li>Сыр 30 г</li><li><b>Овощи 150–250 г — одно сочетание:</b> огурец + помидор · болгарский перец + морковь · листья ромэн/салата + помидор</li></ul>'}
+ ],
+ D: [
+  {n:'У1. Куриные бёдра + пан-соус', vol:'~40–45 г/порц · 30–35 мин · 2–3×/нед', t:'<span class="sect">Состав (2 порции)</span><ul><li>4 куриных бедра без кости с кожей (~500–600 г)</li><li>Соль ~1% веса мяса</li><li>1 шалот или ½ луковицы, мелко</li><li>120 мл куриного бульона (или белого сухого вина)</li><li>25 г холодного сливочного масла</li><li>1 ч.л. лимонного сока</li></ul><span class="sect">Шаги</span><ol><li>Посолить за 20–30 мин, кожу обсушить насухо.</li><li>Средний огонь, чуть масла; бёдра кожей вниз 8–12 мин НЕ ТРОГАЯ — до тёмно-золотой корки.</li><li>Перевернуть, 4–6 мин до готовности (74°C+ безопасный минимум; бёдрам комфортно 79–85 — мягче). Мясо на тарелку.</li><li>Соус: жир слить (оставить ~1 ст.л.), лук 30–60 сек, влить бульон, соскрести осадок, упарить вдвое.</li><li>Огонь выключить, вмешать холодное масло + лимонный сок + соль.</li></ol><span class="sect">Гарнир — готовые пары (или набор У6)</span><ul><li>Брокколи + болгарский перец</li><li>Цветная капуста + морковь</li><li>Кабачок + перец</li><li>Рис/гречка/картофель — отдельная гарнирная четверть тарелки, не «овощная половина».</li></ul><span class="sect">Критично</span><ul><li>Мокрая кожа не хрустит.</li><li>Сковороду до соуса не мыть.</li></ul>'},
+  {n:'У2. Лосось/форель + зелёный гарнир', vol:'~32–36 г/порц · 20 мин · 1–2×/нед', t:'<span class="sect">Покупка</span><ul><li>2 <b>порционных филе на коже по 150–180 г, без костей (PBO — pin bones removed)</b>; охлаждённое или размороженное.</li><li>Не стейк, не слабосолёное/копчёное, не целая сторона.</li><li>У прилавка попросить удалить pin bones. <b>Форель — равноправная бюджетная замена</b> (тоже PBO).</li><li>Перед готовкой: пальцем против волокон, найденные косточки — рыбным пинцетом по направлению наклона.</li></ul><span class="sect">Состав (2 порции)</span><ul><li>Филе (выше)</li><li><b>Зелёный гарнир 250–300 г — один вариант:</b> брокколини / тонкая спаржа · брокколи мелкими соцветиями · стручковая фасоль</li><li>30 г сливочного масла</li><li>Цедра ½ лимона + 1 ст.л. сока, соль</li></ul><span class="sect">Шаги</span><ol><li>Посолить за 15 мин, обсушить.</li><li>Средний огонь, кожей вниз, первые 20 сек прижать лопаткой.</li><li>6–8 мин до непрозрачности на ⅔ высоты; перевернуть на 15–60 сек.</li><li><b>Температура в центре: безопасный дефолт 60–63°C</b> (USDA 63 — матовая, расслаивается); 50–54°C — гастрономический стандарт, ниже официальной нормы — осознанный выбор для свежей рыбы; <b>гостям — только дефолт</b>.</li><li>Гарнир в ту же сковороду + 2 ст.л. воды, под крышку: брокколини/спаржа — 2–3 мин · брокколи — 3–4 мин · фасоль — 3–4 мин.</li><li>Лимонное масло: растопить + цедра + сок + соль, полить.</li></ol>'},
+  {n:'У3. Шакшука', vol:'~20 г/порц (добить перекусом) · 25 мин', t:'<span class="sect">Состав</span><ul><li>1 луковица</li><li>1 болгарский перец</li><li>3 зубчика чеснока</li><li>Банка томатов в собственном соку 400 г</li><li>1 ч.л. кумина + 1 ч.л. копчёной паприки + щепотка чили</li><li>4 яйца</li><li>Фета ~50 г и петрушка по желанию, хлеб</li></ul><span class="sect">Шаги</span><ol><li>Лук + перец соломкой, средний огонь, 5–7 мин.</li><li>Чеснок + специи, 30–60 сек.</li><li>Томаты, размять, тушить 10–15 мин. Посолить.</li><li>Лунки, вбить яйца, под крышку 5–8 мин. Желток: жидкий — гастрономический вариант; полностью безопасный — плотный.</li><li>Фета + петрушка, подавать в сковороде.</li></ol>'},
+  {n:'У4. Чечевичный суп (формула)', vol:'~18–20 г/порц · 30 мин · кастрюля = 3–4 порции', t:'<span class="sect">Состав</span><ul><li>Красная чечевица 250 г</li><li>1 луковица + 1 морковь</li><li>2 зубчика чеснока</li><li>Банка томатов 400 г</li><li>1 ч.л. кумина</li><li>~1 л воды, соль, лимон</li></ul><span class="sect">Шаги</span><ol><li>Лук + морковь мелко, на масле 5 мин.</li><li>Чеснок + кумин, 30 сек.</li><li>Промытая чечевица + томаты + вода.</li><li>18–20 мин до мягкости, посолить в конце, подавить толкушкой.</li><li>В тарелке — лимонный сок, по желанию ложка йогурта.</li></ol><span class="sect">Примечание</span><ul><li>Бюджетный batch-якорь; пара — яйца или сыр рядом.</li></ul>'},
+  {n:'У5. Паста с белком', vol:'~28–38 г/порц · 20 мин · ≤1–2×/нед', t:'<span class="sect">Состав — база альо-э-олио (2 порции)</span><ul><li>200 г спагетти</li><li>50 мл оливкового масла</li><li>4 зубчика чеснока пластинами</li><li>½ ч.л. хлопьев чили</li><li>Петрушка; соль в воду 10 г/л</li></ul><span class="sect">Шаги</span><ol><li>Спагетти на 1 мин меньше упаковки; перед сливом ОТЛИТЬ КРУЖКУ воды.</li><li>Чеснок в холодное масло, слабый огонь, до бледно-золотого 3–4 мин (коричневый = горечь, заново).</li><li>+ чили + ~120 мл воды от пасты — эмульсия.</li><li>Пасту в сковороду, мешать 1–2 мин.</li></ol><span class="sect">Белковая добавка — обязательна</span><ul><li>Банка тунца в с/с (слить) в соус, или</li><li>2 <b>варёных</b> яйца (жидкий желток — только пастеризованные яйца), или</li><li>Остатки курицы У1, или</li><li>Креветки 150 г (1–2 мин в соусе).</li></ul>'},
+  {n:'У6. Овощи в духовке (конкретный справочник)', vol:'2 порции = 500–600 г', t:'<span class="sect">База</span><ul><li>500–600 г овощей, 1–1,5 ст.л. масла, соль; 200–220°C; один слой с зазорами; перевернуть в середине.</li></ul><span class="sect">Наборы (выбрать один)</span><ul><li>(а) брокколи + перец + кабачок</li><li>(б) цветная капуста + морковь + красный лук</li><li>(в) тыква + морковь + перец</li></ul><span class="sect">Очерёдность закладки</span><ol><li>Морковь / тыква — первыми, 30–40 мин.</li><li>Брокколи / цветная — одинаковыми соцветиями, 20–25 мин.</li><li>Перец / кабачок / красный лук — последними, 15–20 мин.</li></ol><span class="sect">Критично</span><ul><li>Не все овощи одновременно с одним временем; впритык — парятся, не жарятся.</li></ul>'},
+  {n:'У7. Салат + винегрет', vol:'2 порции · 5 мин', t:'<span class="sect">Формула (2 порции)</span><ul><li>80–120 г листьев (руккола / ромэн / микс)</li><li>150–250 г хруста: огурец, редис, помидор, перец (один-два вида)</li><li><b>Один акцент:</b> 20–30 г орехов ИЛИ 30–40 г сыра ИЛИ 1 яйцо</li></ul><span class="sect">Винегрет (выход ~60 мл)</span><ol><li>3 ст.л. оливкового масла</li><li>1 ст.л. лимонного сока или винного уксуса</li><li>½ ч.л. дижонской горчицы</li><li>¼ ч.л. мёда + соль</li><li>Встряхнуть в банке; <b>на 2 порции — 2–3 ст.л.</b>, остальное в холодильник (4–5 дней).</li></ol>'},
+  {n:'У8. Томатное рагу с индейкой и фасолью — «мягкое чили»', vol:'~30–35 г/порц · 35–45 мин · batch = 4 порции', t:'<span class="sect">Что это</span><ul><li>«Чили» = густое томатное рагу в стиле chili con carne; <b>по умолчанию НЕ острое</b> — острота строго опциональна.</li><li>Второй batch-якорь в дополнение к супу У4, не замена.</li></ul><span class="sect">Состав (4 порции)</span><ul><li>Индейка 500 г: фарш — дефолт; равноценно — филе бедра или грудки кубиком 1,5–2 см (бедро сочнее, грудку не передерживать)</li><li>Фасоль красная или белая — 2 банки по 400 г, слить и промыть (~480–500 г)</li><li>Томаты в собственном соку — 1 банка 400 г</li><li>1 средняя луковица (~150 г)</li><li>1 болгарский перец (~150–200 г)</li><li>1 средняя морковь (~100 г)</li><li>2–3 зубчика чеснока</li><li>1 ст.л. масла; 100–200 мл воды/бульона</li><li>1 ч.л. кумина; 1–1,5 ч.л. копчёной паприки; соль, чёрный перец</li><li>Хлопья чили 0–¼ ч.л. — строго опционально</li><li>При подаче опционально: лимон/лайм, натуральный йогурт, зелень</li></ul><span class="sect">Техника 1 — фарш</span><ol><li>Лук + перец + морковь мелко, смягчить 5–7 мин.</li><li>Фарш, сразу разбить лопаткой, 6–8 мин.</li><li>Чеснок + специи, 30–45 сек.</li><li>Томаты + фасоль + 100 мл жидкости.</li><li>Тушить 15–20 мин без крышки до густоты.</li></ol><span class="sect">Техника 2 — филе кубиком</span><ol><li>Подрумянить кубики партиями 4–6 мин, снять.</li><li>Лук + перец + морковь 5–7 мин.</li><li>Специи; вернуть индейку + томаты + фасоль + жидкость.</li><li>Тушить 15–20 мин (грудку не пересушивать).</li></ol><span class="sect">Критично</span><ul><li>Фасоль промыть; фарш сразу разбить; специи не сжечь.</li><li>Итог — густое рагу, не суп; густоту регулировать водой.</li><li>Острота по умолчанию нулевая.</li></ul><span class="sect">Подача</span><ul><li>Самостоятельно, с рисом/гречкой или с салатом У7.</li></ul>'}
+ ]
+};
+const SHOP = {
+ 'Белок': ['Яйца 20 шт','Творог 5–9% ~1 кг','Греческий йогурт 2–3 шт','Куриные бёдра 1–1,2 кг','Лосось/форель: 2 PBO-филе по 150–180 г (или тунец в с/с ×3)','Индейка 500 г (фарш/филе — У8)','Сыр ~200 г','Кефир 1 л'],
+ 'Овощи и фрукты (рабочие количества)': ['Лук 3–4 шт','Морковь 3–4 шт','Болгарский перец 3–4 шт','Брокколи/цветная 500–800 г (можно замор.)','Кабачок 1–2 шт (сезонно)','Листья (руккола/ромэн/микс) 150–250 г','Огурцы 3–4 шт','Помидоры 4–5 шт','Чеснок','Лимоны 2–3','Ягоды (можно замор.)','Бананы'],
+ 'Сухая база (раз в 2–4 нед)': ['Спагетти','Рис/гречка/кус-кус','Овсянка','Чечевица красная','Томаты в с/с ×4','Фасоль ×2 банки (У8)','Тунец в с/с ×2–3 (light/skipjack)','Орехи','Оливковое + сливочное масло','Кумин, паприка копчёная, чили, перец','Горчица дижонская, мёд']
+};
+const DAYGRID = [
+ ['~10:00','Подъём: ноги на пол сразу, телефон вне кровати; 10 мин света'],
+ ['~10:15','Завтрак-якорь (З1–З3)'],
+ ['12:00–20:30','Работа · перерывы: глаза/20 мин, встать/час, большой перерыв + прогулка/2–3 ч'],
+ ['~15:00–16:00','Обед (вторая порция ужина)'],
+ ['~18:30','Перекус №1 (белковый) · большой перерыв'],
+ ['21:00–21:50','Силовая (A/B) или кардио/прогулка · ритуал перехода: закрыл ноутбук → сразу переодеться'],
+ ['~22:00','Душ → ужин (готовим 2 порции)'],
+ ['22:30–1:00','Личное время / французский · перекус №2 — опционально, по голоду'],
+ ['~1:00','Экраны вниз · проветрить спальню (~18–20°C)'],
+ ['~2:00','Ритуал отбоя: ортез → сон (8 ч)']
+];
+const MEALS = [['b','Завтрак (~10:15)'],['l','Обед (~15–16)'],['s1','Перекус №1 (~18:30)'],['d','Ужин (~22:00)'],['s2','Перекус №2 (опционально, по голоду)']];
+const LIMITS={weight:[30,200],waist:[40,200],sleep:[0,24],steps:[0,100000],setW:[0,300],setR:[1,200],arm:[0,2],armSessions:[0,20],sweets:[0,50]};
+
+/* ================= утилиты ================= */
+const $=id=>document.getElementById(id);
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function vNum(v,[min,max]){if(v===''||v==null)return null;const n=parseFloat(String(v).replace(',','.'));return isFinite(n)&&n>=min&&n<=max?Math.round(n*100)/100:undefined} // null=пусто, undefined=невалидно
+function isoOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+const todayISO=()=>isoOf(new Date());
+const yesterISO=()=>{const d=new Date();d.setDate(d.getDate()-1);return isoOf(d)};
+function vDate(s){if(!/^\d{4}-\d{2}-\d{2}$/.test(s||''))return null;const d=new Date(s+'T12:00');if(isNaN(d)||isoOf(d)!==s)return null;if(s<'2026-01-01'||s>todayISO())return null;return s}
+function addDays(iso,n){const d=new Date(iso+'T12:00');d.setDate(d.getDate()+n);return isoOf(d)}
+function daysBetween(a,b){return Math.round((new Date(b+'T12:00')-new Date(a+'T12:00'))/864e5)}
+function weekKey(iso){const d=new Date(iso+'T12:00');const t=new Date(d);t.setDate(d.getDate()+3-((d.getDay()+6)%7));const w1=new Date(t.getFullYear(),0,4);const wn=1+Math.round(((t-w1)/864e5-3+((w1.getDay()+6)%7))/7);return t.getFullYear()+'-W'+String(wn).padStart(2,'0')}
+function mondayOf(iso){const d=new Date(iso+'T12:00');d.setDate(d.getDate()-((d.getDay()+6)%7));return isoOf(d)}
+function fmt(n,d=1){return (n==null||isNaN(n))?'—':(+n).toFixed(d).replace(/\.0$/,'')}
+
+/* ================= состояние ================= */
+const LS='healthDash_v1';
+let S;
+try{S=JSON.parse(localStorage.getItem(LS)||'{}')}catch(e){S={}}
+S.days=S.days||{};S.workouts=S.workouts||[];S.sweets=S.sweets||{};S.shop=S.shop||{};S.gate=S.gate||null;S.loc=(S.loc==='bands')?'bands':'home';
+function save(){localStorage.setItem(LS,JSON.stringify(S))}
+function day(iso){S.days[iso]=S.days[iso]||{};return S.days[iso]}
+
+/* ================= темы и табы ================= */
+const themeBtn=$('themeBtn');
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);themeBtn.textContent=t==='dark'?'☀️ Светлая тема':'🌙 Тёмная тема';themeBtn.setAttribute('aria-pressed',String(t==='dark'));localStorage.setItem('hd_theme',t)}
+applyTheme(localStorage.getItem('hd_theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+themeBtn.onclick=()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;
+  document.querySelectorAll('#tabs .tab').forEach(t=>t.classList.toggle('active',t===b));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='p-'+b.dataset.p));
+  renderAll()});
+
+/* ================= экспорт / импорт со схемой ================= */
+$('expBtn').onclick=()=>{const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='health_data_'+todayISO()+'.json';a.click();URL.revokeObjectURL(a.href)};
+$('impBtn').onclick=()=>$('impFile').click();
+const KNOWN_EX=new Set([...EX.A,...EX.B].map(e=>e.n));
+function sanitizeImport(d){
+  const out={days:{},workouts:[],sweets:{},shop:{},gate:null,loc:'home'};let dropped=0;
+  if(d&&typeof d==='object'){
+    if(d.days&&typeof d.days==='object')for(const k in d.days){
+      const iso=vDate(k);const src=d.days[k];if(!iso||!src||typeof src!=='object'){dropped++;continue}
+      const t={};
+      const w=vNum(src.weight,LIMITS.weight);if(w!=null&&w!==undefined)t.weight=w;
+      const wa=vNum(src.waist,LIMITS.waist);if(wa!=null&&wa!==undefined)t.waist=wa;
+      const sl=vNum(src.sleep,LIMITS.sleep);if(sl!=null&&sl!==undefined)t.sleep=sl;
+      const st=vNum(src.steps,LIMITS.steps);if(st!=null&&st!==undefined)t.steps=Math.round(st);
+      const ar=vNum(src.arm,LIMITS.arm);if(ar!=null&&ar!==undefined)t.arm=Math.round(ar);
+      const as=vNum(src.armSessions,LIMITS.armSessions);if(as!=null&&as!==undefined)t.armSessions=Math.round(as);
+      if(src.cardio===true)t.cardio=true;
+      if(src.meals&&typeof src.meals==='object'){t.meals={};for(const m of ['b','l','s1','d','s2'])if(src.meals[m]===true)t.meals[m]=true}
+      if(Object.keys(t).length)out.days[iso]=t;else dropped++;
+    }
+    if(Array.isArray(d.workouts))for(const w of d.workouts){
+      if(!w||typeof w!=='object'){dropped++;continue}
+      const iso=vDate(w.date),type=(w.type==='A'||w.type==='B')?w.type:null,loc=(w.loc==='bands')?'bands':'home';
+      if(!iso||!type){dropped++;continue}
+      const sets={};
+      if(w.sets&&typeof w.sets==='object')for(const ex in w.sets){
+        if(!KNOWN_EX.has(ex))continue;
+        const arr=Array.isArray(w.sets[ex])?w.sets[ex].slice(0,3):[];
+        const clean=arr.map(p=>{if(!Array.isArray(p))return null;
+          const wt=p[0]==null||p[0]===''?null:vNum(p[0],LIMITS.setW);
+          const r=vNum(p[1],LIMITS.setR);
+          if(wt===undefined||r==null||r===undefined)return null;return [wt,Math.round(r)]});
+        if(clean.some(Boolean))sets[ex]=clean.map(p=>p||['','']);
+      }
+      if(Object.keys(sets).length)out.workouts.push({date:iso,type,loc,sets});else dropped++;
+    }
+    if(d.sweets&&typeof d.sweets==='object')for(const k in d.sweets){
+      if(!/^\d{4}-W\d{2}$/.test(k)){dropped++;continue}
+      const c=vNum(d.sweets[k],LIMITS.sweets);if(c!=null&&c!==undefined)out.sweets[k]=Math.round(c)}
+    const shopItems=new Set(Object.values(SHOP).flat());
+    if(d.shop&&typeof d.shop==='object')for(const k in d.shop){if(shopItems.has(k)&&d.shop[k]===true)out.shop[k]=true}
+    if(d.gate&&typeof d.gate==='object'){const cm=vNum(d.gate.cm,LIMITS.waist);const gd=vDate(d.gate.date)||todayISO();
+      if(cm!=null&&cm!==undefined)out.gate={cm,date:gd,mode:gateMode(cm).mode}}
+    if(d.loc==='bands')out.loc='bands';
+  }
+  return {out,dropped};
+}
+$('impFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);const {out,dropped}=sanitizeImport(d);
+    const n=Object.keys(out.days).length+out.workouts.length;
+    if(!n){alert('В файле не нашлось валидных данных дашборда.');return}
+    if(confirm('Импортировать '+n+' валидных записей (отброшено как невалидные: '+dropped+') и заменить текущие данные?')){S=out;save();renderAll();}
+  }catch(_){alert('Файл не读ается как JSON экспорта.')}};
+  r.readAsText(f);e.target.value=''};
+
+/* ================= вычисления ================= */
+function lastVal(field){const ds=Object.keys(S.days).sort().reverse();for(const d of ds){if(S.days[d][field]!=null)return{d,v:S.days[d][field]}}return null}
+function weekAvg(field,wk){let s=0,c=0;for(const d in S.days){if(weekKey(d)===wk&&S.days[d][field]!=null){s+=+S.days[d][field];c++}}return c?s/c:null}
+function workoutsInWeek(wk){const seen=new Set();for(const w of S.workouts){if(weekKey(w.date)===wk)seen.add(w.date+w.type)}return seen.size}
+function cardioInWeek(wk){let c=0;for(const d in S.days){if(weekKey(d)===wk&&S.days[d].cardio)c++}return c}
+function lastWorkout(){return S.workouts.slice().sort((a,b)=>a.date<b.date?1:-1)[0]||null}
+function waistWeekly(){ // последний замер каждой недели: [{mon, v}]
+  const byMon={};
+  for(const d in S.days){if(S.days[d].waist!=null){const m=mondayOf(d);if(!byMon[m]||d>byMon[m].d)byMon[m]={d,v:+S.days[d].waist}}}
+  return Object.keys(byMon).sort().map(m=>({mon:m,v:byMon[m].v}));
+}
+function topSet(sets){ // лучший подход: max вес, при равенстве — повторы; без весов — max повторы
+  let best=null;
+  for(const p of sets){if(!p)continue;const w=p[0]===''||p[0]==null?null:+p[0];const r=+p[1];if(!r)continue;
+    if(!best||((w||0)>(best.w||0))||((w||0)===(best.w||0)&&r>best.r))best={w,r}}
+  return best;
+}
+function exTrend(loc){ // [{n, prev, last, dir}]
+  const rows=[];
+  for(const e of [...EX.A,...EX.B]){
+    const hist=S.workouts.filter(w=>w.loc===loc&&w.sets&&w.sets[e.n]).sort((a,b)=>a.date<b.date?-1:1);
+    if(!hist.length)continue;
+    const last=topSet(hist[hist.length-1].sets[e.n]);
+    const prev=hist.length>1?topSet(hist[hist.length-2].sets[e.n]):null;
+    let dir='—';
+    if(last&&prev){const a=(last.w||0)*1000+last.r,b=(prev.w||0)*1000+prev.r;dir=a>b?'up':(a<b?'dn':'eq')}
+    rows.push({n:e.n,prev,last,dir});
+  }
+  return rows;
+}
+const fmtSet=s=>s?((s.w!=null&&s.w!==''?s.w:'')+((s.w!=null&&s.w!=='')?'×':'')+s.r):'—';
+function gateMode(v){if(v>=85)return{mode:'Р «чистый рекомп»',cls:'warn'};if(v>=81)return{mode:'Р с лёгким уклоном в набор',cls:'ok'};return{mode:'Н «Набор» (архив v1.1)',cls:'ok'}}
+
+/* ================= сегодня ================= */
+function renderKPI(){
+  const wk=weekKey(todayISO());
+  const w=weekAvg('weight',wk)??(lastVal('weight')?.v);
+  const waist=lastVal('waist');
+  const sl=weekAvg('sleep',wk), st=weekAvg('steps',wk);
+  const items=[
+    {n:fmt(w),l:'вес, кг (ср. недели)',s:w?(w<64?'<span class="pill late">ниже 64</span>':w>67?'<span class="pill warn">выше 67</span>':'<span class="pill ok">коридор 64–67</span>'):''},
+    {n:waist?fmt(waist.v):'—',l:'талия, см'+(waist?' ('+esc(waist.d.slice(5))+')':''),s:waist?(waist.v<=84?'<span class="pill ok">цель 01.12 взята</span>':'<span class="pill">цель ≤84</span>'):''},
+    {n:workoutsInWeek(wk)+'/3',l:'силовые на неделе',s:''},
+    {n:cardioInWeek(wk)+'/2',l:'кардио на неделе',s:''},
+    {n:(S.sweets[wk]||0)+'/3',l:'слоты сладкого',s:(S.sweets[wk]||0)>3?'<span class="pill late">перебор</span>':''},
+    {n:fmt(sl),l:'сон, ч (ср.)',s:''},
+    {n:st!=null?Math.round(st).toLocaleString('ru'):'—',l:'шаги (ср.)',s:st!=null?(st>=8000?'<span class="pill ok">≥8K</span>':'<span class="pill warn">цель 8–10K</span>'):''}
+  ];
+  $('kpiRow').innerHTML=items.map(i=>`<div class="box"><div class="n">${i.n}</div><div class="l">${i.l}</div><div class="s">${i.s}</div></div>`).join('');
+}
+function renderToday(){
+  const iso=todayISO(),d=day(iso);
+  $('todayDate').textContent='· '+new Date().toLocaleDateString('ru',{weekday:'long',day:'numeric',month:'long'});
+  d.meals=d.meals||{};
+  $('mealChecks').innerHTML=MEALS.map(([k,l])=>`<label class="checkline ${d.meals[k]?'done':''}"><input type="checkbox" data-meal="${k}" ${d.meals[k]?'checked':''}> ${l}</label>`).join('');
+  document.querySelectorAll('#mealChecks input').forEach(cb=>cb.onchange=()=>{d.meals[cb.dataset.meal]=cb.checked;save();renderToday()});
+  $('armDone').checked=(d.armSessions||0)>=4;
+  $('armCnt').textContent='· сегодня: '+(d.armSessions||0);
+  const wk=weekKey(iso);
+  $('sweetCnt').textContent=S.sweets[wk]||0;$('sweetCnt2').textContent=S.sweets[wk]||0;
+  const last=lastWorkout();
+  const next=last?(last.type==='A'?'B':'A'):'A';
+  const doneToday=S.workouts.some(w=>w.date===iso);
+  $('nextWorkout').className='taskrow '+(doneToday?'active':'soon');
+  $('nextWorkout').innerHTML=doneToday
+    ?`<div class="t">✓ Сегодня тренировка записана</div><div class="m">Следующая — день ${next} (чередование), промежуток ≥1 день.</div>`
+    :`<div class="t">Следующая: день ${next} — ${next==='A'?'низ и тяговые':'верх-жимы и кор'} · слот ~21:00</div><div class="m">${last?'Последняя: '+last.type+' от '+esc(last.date):'Первая тренировка: 2 подхода вместо 3; результаты недели 1 = baseline'} · ритуал перехода: закрыл ноутбук → сразу переодеться</div>`;
+  $('qWeight').value=d.weight??'';$('qSteps').value=(S.days[yesterISO()]?.steps)??'';$('qSleep').value=d.sleep??'';$('qArm').value=d.arm??'';
+  $('dayGrid').innerHTML=DAYGRID.map(r=>`<tr><td style="white-space:nowrap"><b>${r[0]}</b></td><td>${r[1]}</td></tr>`).join('');
+}
+$('qSave').onclick=()=>{
+  const w=vNum($('qWeight').value,LIMITS.weight),st=vNum($('qSteps').value,LIMITS.steps),sl=vNum($('qSleep').value,LIMITS.sleep);
+  const bad=[];
+  if(w===undefined)bad.push('вес (30–200 кг)');
+  if(st===undefined)bad.push('шаги (0–100000)');
+  if(sl===undefined)bad.push('сон (0–24 ч)');
+  if(bad.length){alert('Не сохранено — проверь: '+bad.join(', ')+'.');return}
+  const d=day(todayISO());
+  if(w!=null)d.weight=w;
+  if(sl!=null)d.sleep=sl;
+  if(st!=null)day(yesterISO()).steps=Math.round(st);
+  const ar=$('qArm').value;if(ar!=='')d.arm=+ar;
+  save();renderAll()};
+$('armPlus').onclick=()=>{const d=day(todayISO());d.armSessions=Math.min(LIMITS.armSessions[1],(d.armSessions||0)+1);save();renderToday()};
+function spendSweet(){const wk=weekKey(todayISO());const c=S.sweets[wk]||0;
+  if(c>=3&&!confirm('Слоты недели исчерпаны (3/3). Это точно не «анестезия»? Правило: 15 мин ходьбы → потом решение. Всё равно записать?'))return;
+  S.sweets[wk]=Math.min(LIMITS.sweets[1],c+1);save();renderAll()}
+$('sweetBtn').onclick=spendSweet;$('sweetBtn2').onclick=spendSweet;
+$('cardioBtn').onclick=()=>{const d=day(todayISO());d.cardio=!d.cardio;save();renderAll()};
+
+/* ================= триггеры ================= */
+function renderAlerts(){
+  const out=[];const iso=todayISO();const wk=weekKey(iso);
+  // талия: 4 ПОСЛЕДОВАТЕЛЬНЫЕ недельные точки без снижения
+  const ww=waistWeekly();
+  if(ww.length>=4){const l4=ww.slice(-4);
+    const consecutive=l4.every((p,i)=>i===0||daysBetween(l4[i-1].mon,p.mon)===7);
+    if(consecutive&&l4[3].v>=l4[0].v)out.push(['warn','Талия не снижается 4 недели подряд','По одному рычагу за раз: слоты сладкого 3→2 → гарнир −¼ → шаги к 10K.'])}
+  // вес
+  const w=weekAvg('weight',wk)??lastVal('weight')?.v;
+  if(w&&w<64)out.push(['late','Вес ниже 64 кг','Есть больше: вернуть перекус №2/порцию гарнира. Мышцы дороже скорости талии.']);
+  if(w&&w>67)out.push(['warn','Вес выше 67 кг','Если талия при этом не падает — убрать последнюю добавку еды, проверить сон и алкоголь.']);
+  // рука: 3 СОСЕДНИХ календарных дня со статусом 2
+  const armDates=Object.keys(S.days).filter(d=>S.days[d].arm===2).sort();
+  const lastArm2=armDates[armDates.length-1];
+  if(lastArm2&&S.days[addDays(lastArm2,-1)]?.arm===2&&S.days[addDays(lastArm2,-2)]?.arm===2)
+    out.push(['late','Рука: статус «2» три календарных дня подряд ('+esc(addDays(lastArm2,-2))+'…'+esc(lastArm2)+')','Стоп нагрузкам на левую + связь с врачом/физио. Не ждать осеннего визита.']);
+  // сладкое перебор
+  if((S.sweets[wk]||0)>3)out.push(['warn','Сладкое сверх слотов','Это стресс-сигнал, не слабая воля: проверить сон, вернуть ходьбу-протокол.']);
+  // пропущены 2 плановые силовые подряд: ≥6 дней с последней тренировки (план 3×/нед через день)
+  const lw=lastWorkout();
+  if(lw&&daysBetween(lw.date,iso)>=6)out.push(['warn','Пропущены ≥2 плановые силовые подряд','С последней тренировки '+esc(lw.date)+' прошло '+daysBetween(lw.date,iso)+' дн. Следующая неделя = минимальная (2×20–30 мин), не «догонять» удвоением. Питание в полном объёме.']);
+  // талия падает, но тренд силовых падает
+  if(ww.length>=2&&ww[ww.length-1].v<ww[ww.length-2].v){
+    const downs=exTrend(S.loc).filter(r=>r.dir==='dn').length;
+    if(downs>=2)out.push(['warn','Талия падает, но top-подходы падают ('+downs+' упражнения)','Слишком быстрый минус: +порция белка/гарнира, силовые в приоритет.'])}
+  if(!S.gate)out.push(['soon','Развилка недели 1 не пройдена','Утренний замер талии по протоколу → вкладка «Метрики» → «Развилка режима».']);
+  $('alerts').innerHTML=out.length?out.map(a=>`<div class="taskrow ${a[0]}"><div class="t">${a[1]}</div><div class="m">${a[2]}</div></div>`).join(''):'<div class="muted">Тихо. Триггеры сработают здесь сами (талия 4 недели подряд, вес вне 64–67, рука «2»×3 дня, сладкое сверх слотов, пропуски силовых, падение трендов).</div>';
+}
+
+/* ================= тренировки ================= */
+function renderEx(){
+  const loc=S.loc;
+  document.querySelectorAll('#locSeg button').forEach(b=>b.classList.toggle('on',b.dataset.loc===loc));
+  const rend=list=>list.map(e=>`<details class="ex"><summary>${e.n}<span class="vol">${e.vol}</span></summary><div class="exbody"><b>${loc==='home'?'Дом':'Резинки'}:</b> ${loc==='home'?e.home:e.bands}${e.t}</div></details>`).join('');
+  $('exListA').innerHTML=rend(EX.A);$('exListB').innerHTML=rend(EX.B);
+  $('trendLoc').textContent=loc==='home'?'гантели/дом':'резинки';
+}
+$('locSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.loc=b.dataset.loc;save();renderEx();renderTrend();renderAlerts()});
+let logType=null;
+document.querySelectorAll('[data-log]').forEach(b=>b.onclick=()=>openLog(b.dataset.log));
+function lastSetOf(exName){const ws=S.workouts.filter(w=>w.loc===S.loc&&w.sets&&w.sets[exName]).sort((a,b)=>a.date<b.date?1:-1)[0];return ws?{date:ws.date,s:ws.sets[exName]}:null}
+function openLog(type){logType=type;$('logCard').style.display='block';
+  $('logTitle').textContent='Запись тренировки — день '+type+' ('+(S.loc==='home'?'дом':'резинки')+')';
+  $('logDate').value=todayISO();
+  $('logGrid').innerHTML=EX[type].map((e,i)=>{
+    const p=lastSetOf(e.n);
+    const ph=j=>{if(!p||!p.s[j])return 'вес×повт';const w=p.s[j][0],r=p.s[j][1];if(!r&&w==null)return 'вес×повт';return (w!=null&&w!==''?w:'')+((w!=null&&w!=='')&&r?'×':'')+(r||'')};
+    return `<div class="loggrid">
+      <div class="exn">${e.n} <span class="muted">${e.vol}</span></div>
+      ${[0,1,2].map(j=>`<input type="text" data-ex="${i}" data-set="${j}" placeholder="${esc(ph(j))}">`).join('')}
+      ${p?`<div class="prev">прошлый раз (${esc(p.date)}): ${[0,1,2].map(j=>ph(j)).filter(x=>x!=='вес×повт').map(esc).join(' · ')||'—'}</div>`:''}
+    </div>`}).join('');
+  $('logCard').scrollIntoView({behavior:'smooth'});
+}
+$('logCancel').onclick=()=>{$('logCard').style.display='none'};
+function parseSet(v){ // '12×10' | '12x10' | '12 10' | '10' → [w|null, r] | undefined (невалид)
+  const t=v.trim().replace(',','.');if(!t)return null;
+  const m=t.split(/[x×*\/\s]+/).filter(Boolean);
+  if(m.length===1){const r=vNum(m[0],LIMITS.setR);return r==null||r===undefined?undefined:[null,Math.round(r)]}
+  if(m.length===2){const w=vNum(m[0],LIMITS.setW);const r=vNum(m[1],LIMITS.setR);
+    if(w===undefined||w===null||r==null||r===undefined)return undefined;return [w,Math.round(r)]}
+  return undefined;
+}
+$('logSave').onclick=()=>{
+  const iso=vDate($('logDate').value);
+  if(!iso){alert('Дата тренировки: формат ГГГГ-ММ-ДД, не из будущего и не раньше 2026-01-01.');return}
+  const sets={};const badInputs=[];
+  document.querySelectorAll('#logGrid input').forEach(inp=>{
+    inp.classList.remove('bad');
+    const parsed=parseSet(inp.value);
+    if(parsed===undefined){badInputs.push(inp);inp.classList.add('bad');return}
+    if(parsed===null)return;
+    const ex=EX[logType][+inp.dataset.ex].n;sets[ex]=sets[ex]||[['',''],['',''],['','']];
+    sets[ex][+inp.dataset.set]=parsed;
+  });
+  if(badInputs.length){alert('Красным — нечитаемые подходы. Формат: «12×10» (вес×повторы) или «10» (повторы). Вес 0–300, повторы 1–200.');return}
+  const exCount=Object.keys(sets).filter(k=>sets[k].some(p=>p&&p[1])).length;
+  if(exCount<2){alert('Для зачёта тренировки нужно минимум 2 упражнения по 1 подходу. Сейчас: '+exCount+'.');return}
+  if(S.workouts.some(w=>w.date===iso&&w.type===logType)&&!confirm('На '+iso+' уже записана тренировка '+logType+'. Записать вторую той же датой? (в счёт недели войдёт один раз)'))return;
+  S.workouts.push({date:iso,type:logType,loc:S.loc,sets});
+  save();$('logCard').style.display='none';renderAll()};
+function renderHist(){
+  const sorted=S.workouts.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,12);
+  const rows=sorted.map(w=>{
+    const parts=Object.entries(w.sets).map(([n,ss])=>{
+      const s=ss.filter(x=>x&&x[1]).map(x=>((x[0]!=null&&x[0]!=='')?x[0]:'')+((x[0]!=null&&x[0]!=='')?'×':'')+x[1]).join(', ');
+      return s?esc(n.split(' ')[0])+': '+esc(s):null}).filter(Boolean).join(' · ');
+    const i=S.workouts.indexOf(w);
+    return `<tr><td>${esc(w.date)}</td><td><b>${w.type}</b>${w.loc==='bands'?' <span class="muted">(резинки)</span>':''}</td><td>${parts||'—'}</td><td class="del" data-w="${i}">✕</td></tr>`}).join('');
+  $('histBody').innerHTML=rows||'<tr><td colspan="4" class="muted">Пока пусто — запиши первую тренировку (неделя 1 = baseline).</td></tr>';
+  document.querySelectorAll('#histBody .del').forEach(d=>d.onclick=()=>{if(confirm('Удалить запись тренировки?')){S.workouts.splice(+d.dataset.w,1);save();renderAll()}});
+  const wk=weekKey(todayISO());
+  $('cardioWk').textContent='на этой неделе: '+cardioInWeek(wk)+'/2–3'+(day(todayISO()).cardio?' · сегодня ✓':'');
+}
+function renderTrend(){
+  const rows=exTrend(S.loc);
+  $('trendBody').innerHTML=rows.length?rows.map(r=>{
+    const arrow=r.dir==='up'?'<span class="tr-up">↑</span>':r.dir==='dn'?'<span class="tr-dn">↓</span>':r.dir==='eq'?'<span class="tr-eq">→</span>':'<span class="tr-eq">—</span>';
+    return `<tr><td>${esc(r.n)}</td><td>${esc(fmtSet(r.prev))}</td><td><b>${esc(fmtSet(r.last))}</b></td><td>${arrow}</td></tr>`}).join('')
+    :'<tr><td colspan="4" class="muted">Появится после первых записанных тренировок на этом инвентаре.</td></tr>';
+}
+
+/* ================= рука / рецепты / корзина ================= */
+function renderStatic(){
+  $('armExList').innerHTML=ARMEX.map(e=>`<details class="ex arm"><summary>${e.n}<span class="vol">${e.vol}</span></summary><div class="exbody">${e.t}</div></details>`).join('');
+  $('recB').innerHTML=RECIPES.B.map(r=>`<details class="ex rec"><summary>${r.n}<span class="vol">${r.vol}</span></summary><div class="exbody">${r.t}</div></details>`).join('');
+  $('recL').innerHTML=RECIPES.L.map(r=>`<details class="ex rec"><summary>${r.n}<span class="vol">${r.vol}</span></summary><div class="exbody">${r.t}</div></details>`).join('');
+  $('recD').innerHTML=RECIPES.D.map(r=>`<details class="ex rec"><summary>${r.n}<span class="vol">${r.vol}</span></summary><div class="exbody">${r.t}</div></details>`).join('');
+  $('shopList').innerHTML=Object.entries(SHOP).map(([g,items])=>`<div><h3>${g}</h3>${items.map(i=>`<label class="checkline ${S.shop[i]?'done':''}"><input type="checkbox" data-shop="${esc(i)}" ${S.shop[i]?'checked':''}> ${i}</label>`).join('')}</div>`).join('');
+  document.querySelectorAll('[data-shop]').forEach(cb=>cb.onchange=()=>{S.shop[cb.dataset.shop]=cb.checked;save();renderStatic()});
+}
+$('shopReset').onclick=()=>{S.shop={};save();renderStatic()};
+
+/* ================= метрики ================= */
+$('mDate').value=todayISO();
+$('mSave').onclick=()=>{
+  const iso=vDate($('mDate').value);
+  if(!iso){alert('Дата: формат ГГГГ-ММ-ДД, не из будущего и не раньше 2026-01-01.');return}
+  const w=vNum($('mWeight').value,LIMITS.weight),wa=vNum($('mWaist').value,LIMITS.waist),sl=vNum($('mSleep').value,LIMITS.sleep),st=vNum($('mSteps').value,LIMITS.steps);
+  const bad=[];
+  if(w===undefined)bad.push('вес (30–200)');
+  if(wa===undefined)bad.push('талия (40–200)');
+  if(sl===undefined)bad.push('сон (0–24)');
+  if(st===undefined)bad.push('шаги (0–100000)');
+  if(bad.length){alert('Не сохранено — проверь: '+bad.join(', ')+'.');return}
+  if(w==null&&wa==null&&sl==null&&st==null){alert('Заполни хотя бы одно поле.');return}
+  const d=day(iso);
+  if(w!=null)d.weight=w;if(wa!=null)d.waist=wa;if(sl!=null)d.sleep=sl;if(st!=null)d.steps=Math.round(st);
+  save();$('mWeight').value='';$('mWaist').value='';$('mSleep').value='';$('mSteps').value='';renderAll()};
+function drawChart(svg,pts,opts){
+  svg.innerHTML='';if(pts.length<2){svg.innerHTML='<text x="10" y="30" fill="currentColor" font-size="12" opacity=".55">Нужно ≥2 замеров — график появится сам.</text>';return}
+  const W=svg.clientWidth||600,H=svg.clientHeight||150,P=26;
+  let min=Math.min(...pts.map(p=>p.v)),max=Math.max(...pts.map(p=>p.v));
+  if(opts.band){min=Math.min(min,opts.band[0]);max=Math.max(max,opts.band[1])}
+  if(opts.goal!=null){min=Math.min(min,opts.goal);max=Math.max(max,opts.goal)}
+  const pad=(max-min)*0.15||1;min-=pad;max+=pad;
+  const X=i=>P+ (W-P-8)*(i/(pts.length-1)), Y=v=>H-18-(H-30)*((v-min)/(max-min));
+  let g='';
+  if(opts.band){g+=`<rect x="${P}" y="${Y(opts.band[1])}" width="${W-P-8}" height="${Y(opts.band[0])-Y(opts.band[1])}" fill="var(--ok)" opacity=".12"/>`}
+  if(opts.goal!=null){g+=`<line x1="${P}" y1="${Y(opts.goal)}" x2="${W-8}" y2="${Y(opts.goal)}" stroke="var(--ok)" stroke-dasharray="4 3" stroke-width="1.5"/><text x="${W-10}" y="${Y(opts.goal)-4}" text-anchor="end" font-size="10" fill="var(--ok)">цель ${opts.goal}</text>`}
+  g+=`<polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${pts.map((p,i)=>X(i)+','+Y(p.v)).join(' ')}"/>`;
+  pts.forEach((p,i)=>{g+=`<circle cx="${X(i)}" cy="${Y(p.v)}" r="3" fill="var(--accent)"/>`;
+    if(i===0||i===pts.length-1||pts.length<=8)g+=`<text x="${X(i)}" y="${Y(p.v)-7}" text-anchor="middle" font-size="10" fill="currentColor" opacity=".8">${fmt(p.v)}</text>`});
+  g+=`<text x="${P}" y="${H-4}" font-size="9.5" fill="currentColor" opacity=".55">${esc(pts[0].l)}</text><text x="${W-8}" y="${H-4}" text-anchor="end" font-size="9.5" fill="currentColor" opacity=".55">${esc(pts[pts.length-1].l)}</text>`;
+  svg.innerHTML=g;
+}
+function renderCharts(){
+  const byWeek={};for(const d in S.days){const v=S.days[d].weight;if(v!=null){const k=weekKey(d);(byWeek[k]=byWeek[k]||[]).push(+v)}}
+  const wpts=Object.keys(byWeek).sort().slice(-14).map(k=>({v:byWeek[k].reduce((a,b)=>a+b)/byWeek[k].length,l:k.slice(5)}));
+  drawChart($('chWeight'),wpts,{band:[64,67]});
+  const ww=waistWeekly().slice(-16).map(p=>({v:p.v,l:p.mon.slice(5)}));
+  drawChart($('chWaist'),ww,{goal:84});
+}
+function renderMonday(){
+  const wk=weekKey(todayISO());const prev=weekKey(addDays(todayISO(),-7));
+  const waLast=k=>{const arr=[];for(const d in S.days){if(weekKey(d)===k&&S.days[d].waist!=null)arr.push([d,S.days[d].waist])}arr.sort();return arr.length?arr[arr.length-1][1]:null};
+  const armWorst=k=>{let m=null;for(const d in S.days){if(weekKey(d)===k&&S.days[d].arm!=null)m=Math.max(m??0,S.days[d].arm)}return m};
+  const rows=[
+    ['Вес, ср.',fmt(weekAvg('weight',wk)),fmt(weekAvg('weight',prev))],
+    ['Талия (последняя)',fmt(waLast(wk)),fmt(waLast(prev))],
+    ['Силовые',workoutsInWeek(wk)+'/3',workoutsInWeek(prev)+'/3'],
+    ['Кардио',cardioInWeek(wk)+'/2',cardioInWeek(prev)+'/2'],
+    ['Шаги, ср.',weekAvg('steps',wk)!=null?Math.round(weekAvg('steps',wk)).toLocaleString('ru'):'—',weekAvg('steps',prev)!=null?Math.round(weekAvg('steps',prev)).toLocaleString('ru'):'—'],
+    ['Сон, ср.',fmt(weekAvg('sleep',wk)),fmt(weekAvg('sleep',prev))],
+    ['Рука (худший статус)',armWorst(wk)??'—',armWorst(prev)??'—'],
+    ['Сладкое',(S.sweets[wk]||0)+'/3',(S.sweets[prev]||0)+'/3']
+  ];
+  $('mondayBody').innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td><b>${r[1]}</b></td><td class="muted">${r[2]}</td></tr>`).join('');
+}
+function renderMHist(){
+  const ds=Object.keys(S.days).filter(d=>{const x=S.days[d];return x.weight!=null||x.waist!=null||x.sleep!=null||x.steps!=null||x.arm!=null}).sort().reverse().slice(0,21);
+  $('mHist').innerHTML=ds.map(d=>{const x=S.days[d];
+    return `<tr><td>${esc(d)}</td><td>${fmt(x.weight)}</td><td>${fmt(x.waist)}</td><td>${fmt(x.sleep)}</td><td>${x.steps!=null?(+x.steps).toLocaleString('ru'):'—'}</td><td>${x.arm??'—'}</td><td class="del" data-d="${esc(d)}">✕</td></tr>`}).join('')||'<tr><td colspan="7" class="muted">Пусто. Первый шаг плана: утренний замер талии по протоколу.</td></tr>';
+  document.querySelectorAll('#mHist .del').forEach(el=>el.onclick=()=>{if(confirm('Удалить замеры за '+el.dataset.d+'?')){delete S.days[el.dataset.d];save();renderAll()}});
+}
+$('gateBtn').onclick=()=>{
+  const v=vNum($('gateWaist').value,LIMITS.waist);
+  if(v==null||v===undefined){alert('Введи замер талии в см (40–200).');return}
+  const gm=gateMode(v);
+  S.gate={cm:v,mode:gm.mode,date:todayISO()};day(todayISO()).waist=v;save();
+  renderAll()};
+function renderGate(){
+  const g=S.gate;const el=$('gateRes');
+  if(g){const gm=gateMode(g.cm);el.textContent=`${g.cm} см → режим ${gm.mode} (зафиксировано ${g.date})`;el.className='pill '+gm.cls;$('gateWaist').value=g.cm;
+    $('modeLbl').textContent=gm.mode}
+  else{el.textContent='ещё не пройдена';el.className='pill'}
+}
+
+/* ================= общий рендер ================= */
+function renderAll(){renderKPI();renderToday();renderAlerts();renderEx();renderTrend();renderHist();renderCharts();renderMonday();renderMHist();renderGate()}
+renderStatic();renderAll();
+addEventListener('resize',()=>renderCharts());
+</script>
+</body>
+</html>
